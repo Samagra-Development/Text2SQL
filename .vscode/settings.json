@@ -1,0 +1,8 @@
+{
+    "files.exclude": {
+        "**/*.pyc": true,
+        "**/.ipynb_checkpoints": true,
+        "**/__pycache__": true,
+        "venv": true
+    }
+}
