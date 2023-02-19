@@ -28,4 +28,6 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tox targets for ${{ matrix.python-version }}
-        run: python -m unittest tests.related_tables
+        run: |
+          source venv/bin/activate
+          python -m unittest tests.related_tables
