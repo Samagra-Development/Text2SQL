@@ -2,12 +2,16 @@ version: '3'
 services:
   postgres:
     image: postgres:latest
+    env_file:
+      - .env
     restart: always
 
   hasura:
     image: hasura/graphql-engine:latest
     ports:
-      - '8080:8080'
+      - '8084:8080'
     depends_on:
       - 'postgres'
+    env_file:
+      - .env
     restart: always
