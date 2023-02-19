@@ -38,6 +38,7 @@ def get_related_tables(schema_file, subject):
 
     return related_tables
 
+
 def get_columns_for_table(table_name, schema):
     """
     Get the list of column names for a given table from a SQL schema string.

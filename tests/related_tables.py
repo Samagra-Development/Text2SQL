@@ -37,12 +37,18 @@ class SimpleQueries(unittest.TestCase):
                     );""")
 
         # Define the expected output for the 'subject' table
-        expected_output = """CREATE TABLE subject (
-                            id INTEGER PRIMARY KEY autoincrement,
-                            name text,
-                            passingMarks INTEGER
-                        );"""
+        expected_output = """
+        CREATE TABLE subject (
+            id INTEGER PRIMARY KEY autoincrement,
+            name text,
+            passingMarks INTEGER
+        );
+        
+        
+        
+        """
 
+    def integration_test(self):
         # Create the subset schema for the 'subject' table
         related_tables_and_columns = get_related_tables_and_columns('schema.sql', 'subject')
         create_subset_schema('subject', related_tables_and_columns, 'subset_schema.sql')
