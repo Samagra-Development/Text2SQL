@@ -1,1 +1,4 @@
 sql-formatter
+aiohttp
+quart
+git+https://github.com/ChakshuGautam/ChatGPT.git

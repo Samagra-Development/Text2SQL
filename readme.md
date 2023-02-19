@@ -36,6 +36,8 @@ The process is
 ### Installation
 
 ```bash
+python3 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
@@ -43,4 +45,21 @@ pip install -r requirements.txt
 
 ```bash
 python -m unittest tests.related_tables
+```
+
+### Running the app
+
+```bash
+python src/server/app.py
+```
+
+### Testing the prompt
+
+```bash
+curl --location 'http://localhost:5078/prompt' \
+--header 'Content-Type: application/json' \
+--header 'Cookie: csrftoken=SWTHvaNeh4g3KImyRotjdDcMYuiW0dw4ctce3LXEkRWHJx71t7nKMLCk70wSdSSB' \
+--data '{
+    "prompt": "Hey how are you?"
+}'
 ```
