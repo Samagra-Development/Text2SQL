@@ -33,6 +33,12 @@ The process is
 - Return SQL query
 - Verify the query on a mock DB
 
+### Installation
+
+```bash
+pip install -r requirements.txt
+```
+
 ### Running Tests
 
 ```bash
