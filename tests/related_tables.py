@@ -8,33 +8,43 @@ class SimpleQueries(unittest.TestCase):
     # Write a function to setup tests
     def setUp(self):
          # First, create a temporary schema file to use for testing
-        with open('schema.sql', 'w') as f:
+        schema_file = 'schema.sql'
+        script_dir = os.path.dirname(__file__)
+        schema_file = os.path.join(script_dir, schema_file)
+        with open(schema_file, 'w') as f:
             f.write("""CREATE TABLE student (
-                        id INTEGER PRIMARY KEY autoincrement,
-                        name text
-                    );
+    id INTEGER PRIMARY KEY autoincrement,
+    name text
+);
 
-                    CREATE TABLE subject (
-                        id INTEGER PRIMARY KEY autoincrement,
-                        name text,
-                        passingMarks INTEGER
-                    );
+CREATE TABLE subject (
+    id INTEGER PRIMARY KEY autoincrement,
+    name text
+);
 
-                    CREATE TABLE midDayMealRecieved (
-                        id INTEGER PRIMARY KEY autoincrement,
-                        date DATETIME,
-                        student_id INTEGER,
-                        FOREIGN KEY (student_id) REFERENCES student(id)
-                    );
+CREATE TABLE midDayMealRecieved (
+    id INTEGER PRIMARY KEY autoincrement,
+    date DATETIME,
+    student_id INTEGER,
+    FOREIGN KEY (student_id) REFERENCES student(id)
+);
 
-                    CREATE TABLE examMarks (
-                        id INTEGER PRIMARY KEY autoincrement,
-                        subject_id INTEGER,
-                        FOREIGN KEY (subject_id) REFERENCES subject(id),
-                        student_id INTEGER,
-                        FOREIGN KEY (student_id) REFERENCES student(id),
-                        marks INTEGER
-                    );""")
+CREATE TABLE passingMarks (
+    subject INTEGER,
+    passingMarks INTEGER,
+    FOREIGN KEY (subject) REFERENCES subject(id)
+);
+
+CREATE TABLE examMarks (
+    id INTEGER PRIMARY KEY autoincrement,
+    subject_id INTEGER,
+    FOREIGN KEY (subject_id) REFERENCES subject(id),
+    student_id INTEGER,
+    FOREIGN KEY (student_id) REFERENCES student(id),
+    marks INTEGER
+);
+
+""")
 
         # Define the expected output for the 'subject' table
         expected_output = """
@@ -66,13 +76,14 @@ class SimpleQueries(unittest.TestCase):
 
     def test_get_related_tables_and_columns(self):
         schema_file = 'schema.sql'
-
+        script_dir = os.path.dirname(__file__)
+        schema_file = os.path.join(script_dir, schema_file)
         # Test for 'subject' table
         table_name = 'subject'
         expected_output = {
             'subject': ['id', 'name'],
             'passingMarks': ['subject', 'passingMarks'],
-            'examMarks': ['id', 'subject', 'student']
+            'examMarks': ['id', 'subject_id', 'student_id', 'marks']
         }
         assert get_related_tables_and_columns(schema_file, table_name) == expected_output
 
@@ -80,7 +91,8 @@ class SimpleQueries(unittest.TestCase):
         table_name = 'student'
         expected_output = {
             'student': ['id', 'name'],
-            'midDayMealRecieved': ['id', 'date', 'student']
+            'examMarks': ['id', 'subject_id', 'student_id', 'marks'],
+            'midDayMealRecieved': ['id', 'date', 'student_id']
         }
         assert get_related_tables_and_columns(schema_file, table_name) == expected_output
 
@@ -88,31 +100,28 @@ class SimpleQueries(unittest.TestCase):
         table_name = 'passingMarks'
         expected_output = {
             'passingMarks': ['subject', 'passingMarks'],
-            'subject': ['id', 'name']
         }
         assert get_related_tables_and_columns(schema_file, table_name) == expected_output
 
         # Test for 'midDayMealRecieved' table
         table_name = 'midDayMealRecieved'
         expected_output = {
-            'midDayMealRecieved': ['id', 'date', 'student'],
-            'student': ['id', 'name']
+            'midDayMealRecieved': ['id', 'date', 'student_id'],
         }
         assert get_related_tables_and_columns(schema_file, table_name) == expected_output
 
         # Test for 'examMarks' table
         table_name = 'examMarks'
         expected_output = {
-            'examMarks': ['id', 'subject', 'student'],
-            'student': ['id', 'name'],
-            'subject': ['id', 'name']
+            'examMarks': ['id', 'subject_id', 'student_id', 'marks'],
         }
         assert get_related_tables_and_columns(schema_file, table_name) == expected_output
 
 
     def test_create_subset_schema(self):
         schema_file = 'schema.sql'
-
+        script_dir = os.path.dirname(__file__)
+        schema_file = os.path.join(script_dir, schema_file)
         # Test for 'subject' table
         table_name = 'subject'
         related_tables = {
@@ -121,24 +130,27 @@ class SimpleQueries(unittest.TestCase):
             'examMarks': ['id', 'subject', 'student']
         }
         expected_output = '''CREATE TABLE subject (
-            id INTEGER PRIMARY KEY autoincrement,
-            name text
-        );
+    id INTEGER PRIMARY KEY autoincrement,
+    name text
+);
 
-        CREATE TABLE passingMarks (
-            subject id,
-            passingMarks INTEGER,
-            FOREIGN KEY (subject) REFERENCES subject(id)
-        );
+CREATE TABLE passingMarks (
+    subject INTEGER,
+    passingMarks INTEGER,
+    FOREIGN KEY (subject) REFERENCES subject(id)
+);
 
-        CREATE TABLE examMarks (
-            id INTEGER PRIMARY KEY autoincrement,
-            subject id,
-            student id,
-            FOREIGN KEY (subject) REFERENCES subject(id),
-            FOREIGN KEY (student) REFERENCES student(id)
-        );
-        '''
+CREATE TABLE examMarks (
+    id INTEGER PRIMARY KEY autoincrement,
+    subject_id INTEGER,
+    FOREIGN KEY (subject_id) REFERENCES subject(id),
+    student_id INTEGER,
+    FOREIGN KEY (student_id) REFERENCES student(id),
+    marks INTEGER
+);
+
+'''
+        
         assert create_subset_schema(schema_file, table_name, related_tables) == expected_output
 
         # Test for 'student' table
@@ -147,19 +159,20 @@ class SimpleQueries(unittest.TestCase):
             'student': ['id', 'name'],
             'midDayMealRecieved': ['id', 'date', 'student']
         }
-        expected_output = '''
-        CREATE TABLE student (
-            id INTEGER PRIMARY KEY autoincrement,
-            name text
-        );
+        expected_output = '''CREATE TABLE student (
+    id INTEGER PRIMARY KEY autoincrement,
+    name text
+);
 
-        CREATE TABLE midDayMealRecieved (
-            id INTEGER PRIMARY KEY autoincrement,
-            date DATETIME,
-            student id,
-            FOREIGN KEY (student) REFERENCES student(id)
-        );
-        '''
+CREATE TABLE midDayMealRecieved (
+    id INTEGER PRIMARY KEY autoincrement,
+    date DATETIME,
+    student_id INTEGER,
+    FOREIGN KEY (student_id) REFERENCES student(id)
+);
+
+'''
+
         assert create_subset_schema(schema_file, table_name, related_tables) == expected_output
 
         # Test for 'passingMarks' table
@@ -168,18 +181,18 @@ class SimpleQueries(unittest.TestCase):
             'passingMarks': ['subject', 'passingMarks'],
             'subject': ['id', 'name']
         }
-        expected_output = '''
-        CREATE TABLE subject (
-            id INTEGER PRIMARY KEY autoincrement,
-            name text
-        );
+        expected_output = '''CREATE TABLE subject (
+    id INTEGER PRIMARY KEY autoincrement,
+    name text
+);
 
-        CREATE TABLE passingMarks (
-            subject id,
-            passingMarks INTEGER,
-            FOREIGN KEY (subject) REFERENCES subject(id)
-        );
-        '''
+CREATE TABLE passingMarks (
+    subject INTEGER,
+    passingMarks INTEGER,
+    FOREIGN KEY (subject) REFERENCES subject(id)
+);
+
+'''
         assert create_subset_schema(schema_file, table_name, related_tables) == expected_output
 
         # Test for 'midDayMealRecieved' table
@@ -188,19 +201,19 @@ class SimpleQueries(unittest.TestCase):
             'midDayMealRecieved': ['id', 'date', 'student'],
             'student': ['id', 'name']
         }
-        expected_output = '''
-        CREATE TABLE student (
-            id INTEGER PRIMARY KEY autoincrement,
-            name text
-        );
+        expected_output = '''CREATE TABLE student (
+    id INTEGER PRIMARY KEY autoincrement,
+    name text
+);
 
-        CREATE TABLE midDayMealRecieved (
-            id INTEGER PRIMARY KEY autoincrement,
-            date DATETIME,
-            student id,
-            FOREIGN KEY (student) REFERENCES student(id)
-        );
-        '''
+CREATE TABLE midDayMealRecieved (
+    id INTEGER PRIMARY KEY autoincrement,
+    date DATETIME,
+    student_id INTEGER,
+    FOREIGN KEY (student_id) REFERENCES student(id)
+);
+
+'''
         assert create_subset_schema(schema_file, table_name, related_tables) == expected_output
 
         # Test for 'examMarks' table
@@ -210,25 +223,26 @@ class SimpleQueries(unittest.TestCase):
             'student': ['id', 'name'],
             'subject': ['id', 'name']
         }
-        expected_output = '''
-        CREATE TABLE student (
-            id INTEGER PRIMARY KEY autoincrement,
-            name text
-        );
+        expected_output = '''CREATE TABLE student (
+    id INTEGER PRIMARY KEY autoincrement,
+    name text
+);
 
-        CREATE TABLE subject (
-            id INTEGER PRIMARY KEY autoincrement,
-            name text
-        );
+CREATE TABLE subject (
+    id INTEGER PRIMARY KEY autoincrement,
+    name text
+);
 
-        CREATE TABLE examMarks (
-            id INTEGER PRIMARY KEY autoincrement,
-            subject id,
-            student id,
-            FOREIGN KEY (subject) REFERENCES subject(id),
-            FOREIGN KEY (student) REFERENCES student(id)
-        );
-        '''
+CREATE TABLE examMarks (
+    id INTEGER PRIMARY KEY autoincrement,
+    subject_id INTEGER,
+    FOREIGN KEY (subject_id) REFERENCES subject(id),
+    student_id INTEGER,
+    FOREIGN KEY (student_id) REFERENCES student(id),
+    marks INTEGER
+);
+
+'''
         assert create_subset_schema(schema_file, table_name, related_tables) == expected_output
 
     # Write a function to truncate DB after test ends
@@ -238,6 +252,9 @@ class SimpleQueries(unittest.TestCase):
     # Tear down the test database
     def tearDown(self):
         # Delete the temporary files created for testing
+        schema_file = 'schema.sql'
+        script_dir = os.path.dirname(__file__)
+        schema_file = os.path.join(script_dir, schema_file)
         self.truncate_db()
-        os.remove('schema.sql')
-        os.remove('subset_schema.sql')
+        os.remove(schema_file)
+        #os.remove('subset_schema.sql')

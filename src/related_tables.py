@@ -51,12 +51,13 @@ def get_columns_for_table(table_name, schema):
         List[str]: A list of column names for the given table.
     """
     columns = []
-    match = re.search(f"CREATE TABLE {table_name} \((.*?)\)", schema, re.DOTALL)
+    match = re.search(f"CREATE TABLE {table_name} \((.*?)\);", schema, re.DOTALL)
     if match:
         column_defs = match.group(1).split(",\n")
         for column_def in column_defs:
             column_name = column_def.strip().split()[0]
-            columns.append(column_name)
+            if column_name != 'FOREIGN':
+                columns.append(column_name)
     return columns
 
 
@@ -78,9 +79,10 @@ def get_related_tables_and_columns(schema_file, table_name):
 
         # Get the name of the table that contains the foreign key constraint
         table_pattern = r"CREATE TABLE\s+([^\s(]+)"
-        table_match = re.search(table_pattern, schema[match.start():])
+        table_match = re.findall(table_pattern, schema[:match.start()])[-1]
+
         if table_match:
-            related_tables.add(table_match.group(1))
+            related_tables.add(table_match)
 
     # Look for tables that have foreign key constraints that reference the related tables
     for related_table in related_tables.copy():
@@ -94,9 +96,9 @@ def get_related_tables_and_columns(schema_file, table_name):
 
             # Get the name of the table that contains the foreign key constraint
             table_pattern = r"CREATE TABLE\s+([^\s(]+)"
-            table_match = re.search(table_pattern, schema[match.start():])
+            table_match = re.findall(table_pattern, schema[:match.start()])[-1]
             if table_match:
-                related_tables.add(table_match.group(1))
+                related_tables.add(table_match)
 
     # Add the original table to the list of related tables
     related_tables.add(table_name)
@@ -104,24 +106,22 @@ def get_related_tables_and_columns(schema_file, table_name):
     return {table: get_columns_for_table(table, schema) for table in related_tables}
 
 
-def create_subset_schema(subject, related_tables_and_columns, output_file):
-    # Add the subject table and all related tables to a set
-    tables_to_include = set()
-    tables_to_include.add(subject)
+def create_subset_schema(schema_file, subject, related_tables_and_columns):
 
-    # Create a new schema that includes only the relevant tables and columns
-    schema_lines = []
-    with open('schema.sql', 'r') as f:
-        for line in f:
-            if line.startswith('CREATE TABLE '):
-                table_name = line.split()[2]
-                if table_name in tables_to_include:
-                    schema_lines.append(line)
-                    for column in related_tables_and_columns[table_name]:
-                        schema_lines.append(f'  {column},\n')
-                    # Replace the last comma with a closing parenthesis
-                    schema_lines[-1] = schema_lines[-1].rstrip(',\n') + ')'
+    with open(schema_file, 'r') as f:
+        sql = f.read()
+    
+    create_table_regex = r'CREATE TABLE ([^\s(]+)'
+    table_names = re.findall(create_table_regex, sql)
 
-    # Write the new schema to the output file
-    with open(output_file, 'w') as f:
-        f.write(''.join(schema_lines))
+    table_list = list(related_tables_and_columns.keys())
+    
+    tables = []
+    for table_name in table_names:
+        if table_name in table_list:
+            table_regex = rf'CREATE TABLE {table_name} .*?(?=CREATE TABLE|\Z)'
+            table_match = re.search(table_regex, sql, flags=re.DOTALL)
+            if table_match:
+                tables.append(table_match.group(0))
+    sql = ''.join(tables)
+    return sql
