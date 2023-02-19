@@ -151,7 +151,7 @@ CREATE TABLE examMarks (
 
 '''
         
-        assert create_subset_schema(schema_file, table_name, related_tables) == expected_output
+        assert create_subset_schema(schema_file, related_tables) == expected_output
 
         # Test for 'student' table
         table_name = 'student'
@@ -173,7 +173,7 @@ CREATE TABLE midDayMealRecieved (
 
 '''
 
-        assert create_subset_schema(schema_file, table_name, related_tables) == expected_output
+        assert create_subset_schema(schema_file, related_tables) == expected_output
 
         # Test for 'passingMarks' table
         table_name = 'passingMarks'
@@ -193,7 +193,7 @@ CREATE TABLE passingMarks (
 );
 
 '''
-        assert create_subset_schema(schema_file, table_name, related_tables) == expected_output
+        assert create_subset_schema(schema_file, related_tables) == expected_output
 
         # Test for 'midDayMealRecieved' table
         table_name = 'midDayMealRecieved'
@@ -214,7 +214,7 @@ CREATE TABLE midDayMealRecieved (
 );
 
 '''
-        assert create_subset_schema(schema_file, table_name, related_tables) == expected_output
+        assert create_subset_schema(schema_file, related_tables) == expected_output
 
         # Test for 'examMarks' table
         table_name = 'examMarks'
@@ -243,7 +243,7 @@ CREATE TABLE examMarks (
 );
 
 '''
-        assert create_subset_schema(schema_file, table_name, related_tables) == expected_output
+        assert create_subset_schema(schema_file, related_tables) == expected_output
 
     # Write a function to truncate DB after test ends
     def truncate_db(self):

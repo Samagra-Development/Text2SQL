@@ -106,7 +106,7 @@ def get_related_tables_and_columns(schema_file, table_name):
     return {table: get_columns_for_table(table, schema) for table in related_tables}
 
 
-def create_subset_schema(schema_file, subject, related_tables_and_columns):
+def create_subset_schema(schema_file, related_tables_and_columns):
 
     with open(schema_file, 'r') as f:
         sql = f.read()
