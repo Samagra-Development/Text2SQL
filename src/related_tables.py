@@ -1,3 +1,4 @@
+import re
 import sqlite3
 
 def get_related_tables(schema_file, subject):
@@ -36,6 +37,27 @@ def get_related_tables(schema_file, subject):
                 related_tables.append(table)
 
     return related_tables
+
+def get_columns_for_table(table_name, schema):
+    """
+    Get the list of column names for a given table from a SQL schema string.
+
+    Args:
+        table_name (str): The name of the table to get columns for.
+        schema (str): The SQL schema string.
+
+    Returns:
+        List[str]: A list of column names for the given table.
+    """
+    columns = []
+    match = re.search(f"CREATE TABLE {table_name} \((.*?)\)", schema, re.DOTALL)
+    if match:
+        column_defs = match.group(1).split(",\n")
+        for column_def in column_defs:
+            column_name = column_def.strip().split()[0]
+            columns.append(column_name)
+    return columns
+
 
 def get_related_tables_and_columns(schema_file, table_name):
     related_tables = set()
@@ -78,7 +100,7 @@ def get_related_tables_and_columns(schema_file, table_name):
     # Add the original table to the list of related tables
     related_tables.add(table_name)
 
-    return {table: get_columns_for_table(schema, table, related_columns) for table in related_tables}
+    return {table: get_columns_for_table(table, schema) for table in related_tables}
 
 
 def create_subset_schema(subject, related_tables_and_columns, output_file):
