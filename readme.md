@@ -5,7 +5,6 @@ There are two inputs
 2. text/prompt - The text to be converted to SQL. Example - "Number of students in class 5?"
 
 The process is
-- Onboard a Schema using the `/onboard` API. Store it in a cache with 
 - Figure out the subject of the query (Could be a query to ChatGPT) - "students"; Map it to a table - "students" -> "student"; Map relevant query params to either table or columns; using ChatGPT;
     - [A sample prompt](./prompt/related_tables.txt)
     - A sample response -
@@ -26,7 +25,12 @@ The process is
 - Create a prompt for the query - "Given this SQL Schema - {schema-relevant.sql}, Can you give a SQL query as a code snippet to "{NL SQL Query}" and don't share with me anything else."
 - Send a prompt to ChatGPT
 - Return SQL query
-- Verify the query on a mock DB
+- Verify the query on a mock DB - `validate_SQL(sql)`
+
+### APIs
+- Assuming this system is single tenant and single database query tool
+- Onboard a Schema using the `/onboard` API => schema.sql => already onboarded to the database | P2
+- `/query` => takes in a single param, `prompt` and based on that prompt return the SQL if ChatGPT provides a valid SQL.
 
 ### Installation
 
