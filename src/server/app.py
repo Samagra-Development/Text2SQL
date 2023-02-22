@@ -57,12 +57,13 @@ async def onboard():
     uploaded_file = (await request.files)['schema']
     if uploaded_file.filename != '':
         print(uploaded_file.read())
+        schema_file = uploaded_file.read()
         # todo: save schema in local db
-        schema_id, schema_err = await insert_into_schema_holder()
+        schema_id, schema_err = await insert_into_schema_holder(schema_file)
         if schema_id is not None:
             resp, db_error = await create_database(schema_id)
             if resp is True:
-                create_schema, onboarding_error = await create_schema_in_db(schema_id, uploaded_file.read())
+                create_schema, onboarding_error = await create_schema_in_db(schema_id, schema_file)
                 if create_schema is True:
                     response = "schema onboarded"
                     status_code = ResponseCodes.SCHEMA_ONBOARDED

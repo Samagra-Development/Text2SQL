@@ -35,12 +35,12 @@ async def create_database_and_schema(db_name):
         return False, str(e)
 
 
-async def insert_into_schema_holder():
+async def insert_into_schema_holder(schema_file):
     try:
         cursor = get_connection()
         new_db_name = uuid4()
-        query = f""" INSERT INTO schema_holder (db_name) VALUES ({new_db_name})"""
-        cursor.execute(query)
+        query = f""" INSERT INTO schema_holder (db_name, schema) VALUES (%s, %s)"""
+        cursor.execute(query, (new_db_name, schema_file))
         print(f"{new_db_name}: inserted successfully")
         return new_db_name, ""
     except Exception as e:
