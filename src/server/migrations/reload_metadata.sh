@@ -1,0 +1,1 @@
+curl -d'{"type": "reload_metadata", "args": {}}' -H 'X-Hasura-Admin-Secret: ${HASURA_SECRET}' ${HASURA_URL}/v1/metadata

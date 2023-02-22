@@ -1,0 +1,1 @@
+curl -d'{"type": "export_metadata", "args": {}}' 'X-Hasura-Admin-Secret: ${HASURA_SECRET}' ${HASURA_URL}/v1/metadata -o hasura_metadata.json

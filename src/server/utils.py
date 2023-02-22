@@ -92,3 +92,11 @@ async def translate_online(prompt_text, source_lang, target_lang, context):
     # response = requests.request("POST", url, headers=headers, data=payload)
     resp = await response.json()
     return resp["text"]
+
+
+async def get_response(response, status_code, http_status_code=200, err_msg=""):
+    if err_msg != "" and err_msg is not None:
+        return {"result": {"code": status_code, "data": response}, "error": {}}, http_status_code
+    else:
+        http_status_code = 400 if http_status_code == 200 else http_status_code
+        return {"result": {}, "error": {"code": status_code, "errMsg": response, "reason": response if response is not None else response}}, http_status_code

@@ -6,7 +6,7 @@ There are two inputs
 
 The process is
 - Figure out the subject of the query (Could be a query to ChatGPT) - "students"; Map it to a table - "students" -> "student"; Map relevant query params to either table or columns; using ChatGPT;
-    - [A sample prompt](./prompt/related_tables.txt)
+    - [A sample prompt](./prompt/related_tables.md)
     - A sample response -
     ```json
         {

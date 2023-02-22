@@ -2,3 +2,5 @@ sql-formatter
 aiohttp
 quart
 git+https://github.com/ChakshuGautam/ChatGPT.git
+psycopg2
+python-dotenv
