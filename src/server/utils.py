@@ -15,7 +15,8 @@ async def chatGPT(prompt, context):
     async for data in chatbot.ask(prompt, conversation_id=None, parent_id=None, context=context):
         response = data["message"]
     if (response == ""):
-        return await chatGPT(prompt, word, context)
+        # return await chatGPT(prompt, word, context)
+        return None
     else:
         return response
 
@@ -95,8 +96,21 @@ async def translate_online(prompt_text, source_lang, target_lang, context):
 
 
 async def get_response(response, status_code, http_status_code=200, err_msg=""):
-    if err_msg != "" and err_msg is not None:
+    if err_msg == "" or err_msg is None:
         return {"result": {"code": status_code, "data": response}, "error": {}}, http_status_code
     else:
         http_status_code = 400 if http_status_code == 200 else http_status_code
-        return {"result": {}, "error": {"code": status_code, "errMsg": response, "reason": response if response is not None else response}}, http_status_code
+        return {"result": {}, "error": {"code": status_code, "errMsg": response, "reason": err_msg if err_msg is not None else response}}, http_status_code
+
+
+async def validate_schema_file(schema):
+    schema = schema.decode('UTF-8')
+    schema = await delete_lines_with_substring(schema, "schema public")
+    return schema
+
+
+async def delete_lines_with_substring(input_string, substring):
+    lines = input_string.split('\n')
+    filtered_lines = [line for line in lines if substring.lower() not in line.lower()]
+    result = '\n'.join(filtered_lines)
+    return result

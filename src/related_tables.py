@@ -125,3 +125,37 @@ def create_subset_schema(schema_file, subject, related_tables_and_columns):
                 tables.append(table_match.group(0))
     sql = ''.join(tables)
     return sql
+
+
+def get_create_table_statements(schema_file, table_name):
+    table_names = [table_name]
+    table_queries = set()
+    with open(schema_file, 'r') as f:
+        schema = f.read()
+        # Get create table statement for the given table name
+        pattern = f'CREATE TABLE public.{table_name}.*?;'
+        match = re.search(pattern, schema, re.DOTALL)
+        if match:
+            table_queries.add(match.group())
+            # Get foreign key related tables
+            pattern = f'ALTER TABLE ONLY public.{table_name}\n.*?REFERENCES public.(\w+).*?;'
+            fk_matches = re.findall(pattern, schema)
+            for fk_match in fk_matches:
+                if fk_match not in table_names:
+                    table_names.append(fk_match)
+        else:
+            return None
+        # Get create table statements for foreign key related tables
+        for table_name in table_names:
+            pattern = f'CREATE TABLE public.{table_name}.*?;'
+            match = re.search(pattern, schema, re.DOTALL)
+            if match:
+                table_queries.add(match.group())
+        return table_queries
+
+
+
+if __name__ == "__main__":
+    res = get_create_table_statements('src/sample-schema.sql', 'assessment')
+    for r in res:
+        print(r)
