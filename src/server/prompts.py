@@ -8,8 +8,9 @@ relatedTables: <comma separated query params as an array>}
 -----------------------------
 Don't include anything else."""
 
-SQL_QUERY_PROMPT = """Given a list of dictionary where the keys of dictionary are table names, and the values are dictionaries with two keys: "columns" and "references". The "columns" key maps to a list of tuples representing the columns in the table and their data type, and the "references" key maps to a dictionary where the keys are the names of related tables, and the values are dictionaries with two keys: "columns" and "referenced_by". The "columns" key maps to a list of tuples representing the columns in the related table, and the "referenced_by" key maps to a list of dictionaries representing the columns in the current table that reference the related table.
------------------------------
- Example list: %s
- -----------------------------
- Can you give a SQL query as a code snippet to "%s" and don't share anything else."""
+SQL_QUERY_PROMPT = """A database schema is given as a list of dictionary where the keys of dictionary are table names, and the values are dictionaries with two keys: "columns" and "references". The "columns" key maps to a list of tuples representing the columns in the table and their data type, and the "references" key maps to a dictionary where the keys are the names of related tables, and the values are dictionaries with two keys: "columns" and "referenced_by". The "columns" key maps to a list of tuples representing the columns in the related table, and the "referenced_by" key maps to a list of dictionaries representing the columns in the current table that reference the related table.
+Given the following list, Give a SQL query as a code snippet to "%s" and don't share anything else. Share only the query dont include any explanation or header.
+--------------------------------------
+List: %s
+----------------------------------
+Share only the query dont include anything else"""

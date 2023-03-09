@@ -8,6 +8,16 @@ services:
       - .env
     restart: always
 
+  mysql:
+    image: mysql:latest
+    ports:
+      - '3306:3306'
+    env_file:
+      - .env
+    restart: always
+    volumes:
+      - ./data:/var/lib/mysql
+
   hasura:
     image: hasura/graphql-engine:latest
     ports:

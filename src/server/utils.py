@@ -1,19 +1,27 @@
 import time
 import os
+from pathlib import Path
 import json
 import json
 from accounts import init_accounts
-import random
+from dotenv import load_dotenv
+
+import openai
+
+file = Path(__file__).resolve()
+parent, ROOT_FOLDER = file.parent, file.parents[2]
+load_dotenv(dotenv_path=f"{ROOT_FOLDER}/.env")
+
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 initialized_accounts = init_accounts()
 
 
 async def chatGPT(prompt, context):
     print("Sending prompt to ChatGPT")
-    chatbot = random.choice(initialized_accounts)
     response = ""
-    async for data in chatbot.ask(prompt, conversation_id=None, parent_id=None, context=context):
-        response = data["message"]
+    completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
+    response = completion.choices[0].message.content
     if (response == ""):
         # return await chatGPT(prompt, word, context)
         return None

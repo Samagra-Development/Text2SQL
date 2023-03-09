@@ -8,11 +8,12 @@ from utils import detect_lang, chatGPT, get_response, validate_schema_file
 from http import HTTPStatus
 from response_codes import ResponseCodes
 from prompts import SUBJECT_QUERY_PROMPT, SQL_QUERY_PROMPT
-from db_helper import insert_into_schema_holder, create_schema_in_db, add_prompts, get_tables_from_schema_id, \
-    get_schema_by_schema_id, get_table_info, create_database_and_schema
+from db_utils import insert_into_schema_holder, add_prompts, get_schema_type_by_schema_id
 import json
 import aiohttp
 import time
+
+from db.db_helper import database_factory
 
 app = Quart(__name__)
 
@@ -29,27 +30,30 @@ async def prompt():
     data = await request.get_json()
     prompt = data['prompt']
     schema_id = data['schema_id']
+    schema_type = await get_schema_type_by_schema_id(schema_id)
+    factory = database_factory()
+    db = factory.get_database_connection(schema_type=schema_type)    
     status, err = await add_prompts(schema_id, prompt)
     if status is True:
-        tables_list, err = await get_tables_from_schema_id(schema_id)
+        tables_list, err = await db.get_tables_from_schema_id(schema_id)
         if tables_list is not None:
             tables = ",".join(tables_list)
         chat_gpt_prompt = SUBJECT_QUERY_PROMPT % (tables, prompt)
         chat_gpt_response = await chatGPT(chat_gpt_prompt, app)
         # todo: add validators for chatgpt responses
+        print(chat_gpt_response)
         chat_gpt_response = json.loads(chat_gpt_response)
-        # schema = get_schema_by_schema_id(schema_id)
         table_list = list()
-        res, err_msg = await get_table_info(schema_id, chat_gpt_response['subject'])
+        res, err_msg = await db.get_table_info(schema_id, chat_gpt_response['subject'])
         table_list.append(res)
         for table in chat_gpt_response['relatedTables']:
-            res_sub_query, err_msg_sub_query = await get_table_info(schema_id, table)
+            res_sub_query, err_msg_sub_query = await db.get_table_info(schema_id, table)
             table_list.append(res_sub_query)
-        query_prompt = SQL_QUERY_PROMPT % (table_list, prompt)
+        query_prompt = SQL_QUERY_PROMPT % (prompt, table_list)
         print("prompt ", query_prompt)
         chat_gpt_query_response = await chatGPT(query_prompt, app)
         print(chat_gpt_query_response)
-        response = {"query": chat_gpt_query_response.replace('\n', ' ')}
+        response = {"query": chat_gpt_query_response.replace('\n', ' ').replace("'''", '').replace('```', '')}
         status_code = ResponseCodes.QUERY_GENERATED.value
         http_status_code = HTTPStatus.OK
     else:
@@ -69,16 +73,19 @@ async def onboard():
     start = time.time()
     # data = (await request.form).get('prompt')
     # print(data)
+    schema_type = (await request.form).get('schema_type')
     uploaded_file = (await request.files)['schema']
-    if uploaded_file.filename != '':
+    if uploaded_file.filename != '' and schema_type != '':
         schema_file = uploaded_file.read()
         # todo: save schema in local db
         # schema_file = await validate_schema_file(schema_file)
-        schema_id, schema_err = await insert_into_schema_holder(schema_file)
+        schema_id, schema_err = await insert_into_schema_holder(schema_file, schema_type)
         if schema_id is not None:
-            resp, db_error = await create_database_and_schema(schema_id)
+            factory = database_factory()
+            db = factory.get_database_connection(schema_type=schema_type)
+            resp, db_error = await db.create_database_and_schema(db_name=schema_id)
             if resp is True:
-                create_schema, onboarding_error = await create_schema_in_db(schema_id, schema_file)
+                create_schema, onboarding_error = await db.create_schema_in_db(schema_id, schema_file)
                 if create_schema is True:
                     response = {"schema_id": schema_id, "message": "schema onboarded"}
                     status_code = ResponseCodes.SCHEMA_ONBOARDED.value
