@@ -7,6 +7,9 @@ services:
     env_file:
       - .env
     restart: always
+    volumes: 
+      - ./00-postgres.sql:/docker-entrypoint-initdb.d/postgres.sql
+      - ./postgres-data:/var/lib/postgresql/data
 
   mysql:
     image: mysql:latest
@@ -16,7 +19,7 @@ services:
       - .env
     restart: always
     volumes:
-      - ./data:/var/lib/mysql
+      - ./mysql-data:/var/lib/mysql
 
   hasura:
     image: hasura/graphql-engine:latest
