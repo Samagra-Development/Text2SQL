@@ -1,7 +1,6 @@
 import os
 
-from quart import Quart
-from quart import request
+from quart import Quart, request, abort, current_app
 from sql_formatter.core import format_sql
 
 from utils import detect_lang, chatGPT, get_response, validate_schema_file
@@ -14,16 +13,32 @@ import aiohttp
 import time
 
 from db.db_helper import database_factory
+from functools import wraps
 
 app = Quart(__name__)
 
+def auth_required(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        auth = request.authorization
+        if (
+            auth is not None and 
+            auth.type == "basic" and
+            auth.username == os.getenv("BASIC_AUTH_USERNAME") and
+            auth.password == os.getenv("BASIC_AUTH_PASSWORD")
+        ):
+            return await func(*args, **kwargs)
+        else:
+            abort(401)
+
+    return wrapper
 
 @app.route('/')
 async def home():
     return {'status': 'WE ARE LIVE'}
 
-
 @app.route('/prompt', methods=['POST'])
+@auth_required
 async def prompt():
     response = status_code = err_msg = http_status_code = ""
     start = time.time()
@@ -67,6 +82,7 @@ async def prompt():
 
 
 # todo: add option for getting schema via post body too
+@auth_required
 @app.route('/onboard', methods=['POST'])
 async def onboard():
     response = status_code = err_msg = http_status_code = ""
