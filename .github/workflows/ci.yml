@@ -44,9 +44,9 @@ jobs:
         port: 22
         script: |
           cd /tmp
-          rm -r Text2SQL
-          git clone https://github.com/tushar5526/Text2SQL-1.git
-          cd Text2SQL
+          rm -r Text2SQL-1
+          git clone https-1://github.com/tushar5526/Text2SQL-1.git
+          cd Text2SQL-1
           cp .env.sample .env
           echo -en "\nBASIC_AUTH_USERNAME=${{ secrets.APP_USERNAME }}\n" >> .env
           echo -en "\nBASIC_AUTH_PASSWORD=${{ secrets.APP_PASSWORD }}\n" >> .env
