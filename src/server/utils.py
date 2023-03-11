@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 import json
 import json
-from accounts import init_accounts
 from dotenv import load_dotenv
 
 import openai
@@ -13,8 +12,6 @@ parent, ROOT_FOLDER = file.parent, file.parents[2]
 load_dotenv(dotenv_path=f"{ROOT_FOLDER}/.env")
 
 openai.api_key = os.getenv('OPENAI_API_KEY')
-
-initialized_accounts = init_accounts()
 
 
 async def chatGPT(prompt, context):

@@ -30,13 +30,3 @@ services:
     env_file:
       - .env
     restart: always
-
-  server:
-    image: server
-    build: 
-      context: .
-      dockerfile: src/Dockerfile
-    ports:
-      - 5078:5078
-    depends_on: 
-      - postgres
