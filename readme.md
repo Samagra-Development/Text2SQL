@@ -62,3 +62,5 @@ curl --location 'http://localhost:5078/prompt' \
     "prompt": "Hey how are you?"
 }'
 ```
+# Contribution
+Check our [QuickStart guide](./contribution.md) if you want to contribute to this project.
