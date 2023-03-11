@@ -1,9 +1,4 @@
 ### Text2SQL
-Run using
-```
-docker-compose -d --build
-```
-
 A simple python library for converting text to SQL queries.
 There are two inputs
 1. schema.sql - The schema of the database
