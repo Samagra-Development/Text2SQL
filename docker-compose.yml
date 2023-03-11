@@ -9,17 +9,7 @@ services:
     restart: always
     volumes: 
       - ./00-postgres.sql:/docker-entrypoint-initdb.d/postgres.sql
-      - ./postgres-data:/var/lib/postgresql/data
-
-  mysql:
-    image: mysql:latest
-    ports:
-      - '3306:3306'
-    env_file:
-      - .env
-    restart: always
-    volumes:
-      - ./mysql-data:/var/lib/mysql
+      - postgres-data:/var/lib/postgresql/data
 
   hasura:
     image: hasura/graphql-engine:latest
@@ -30,3 +20,16 @@ services:
     env_file:
       - .env
     restart: always
+
+  server:
+    image: server
+    build: 
+      context: .
+      dockerfile: src/Dockerfile
+    ports:
+      - 5078:5078
+    depends_on: 
+      - postgres
+
+volumes:
+  postgres-data:

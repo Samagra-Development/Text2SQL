@@ -2,7 +2,6 @@ import abc
 import traceback
 from pathlib import Path
 import psycopg2
-import mysql.connector
 import os
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import re
@@ -39,162 +38,162 @@ class Database(abc.ABC):
         pass
 
 
-class mysql_database(Database):
-    async def get_connection():
-        try:
-            con = mysql.connector.connect(user='root',
-                password=os.getenv('MYSQL_ROOT_PASSWORD'),
-                host=os.getenv('MYSQL_HOST'),
-                port=os.getenv('MYSQL_PORT'))
-            con.autocommit = True
-            cursor = con.cursor()
-            return cursor, con
-        except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
-            raise Exception("Failed to connect to db")
+# class mysql_database(Database):
+#     async def get_connection():
+#         try:
+#             con = mysql.connector.connect(user='root',
+#                 password=os.getenv('MYSQL_ROOT_PASSWORD'),
+#                 host=os.getenv('MYSQL_HOST'),
+#                 port=os.getenv('MYSQL_PORT'))
+#             con.autocommit = True
+#             cursor = con.cursor()
+#             return cursor, con
+#         except Exception as e:
+#             print(f"ERROR: {e}, {traceback.print_exc()}")
+#             raise Exception("Failed to connect to db")
 
-    async def create_database_and_schema(self, db_name):
-        try:
-            con = mysql.connector.connect(
-                user='root',
-                password=os.getenv('MYSQL_ROOT_PASSWORD'),
-                host=os.getenv('MYSQL_HOST'),
-                port=os.getenv('MYSQL_PORT')
-            )
-            #con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-            cursor = con.cursor()
-            query = f'create database `{db_name}`;'
-            cursor.execute(query)
-            cursor.close()
-            con.close()
-            return True, ""
-        except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
-            return False, str(e) 
+#     async def create_database_and_schema(self, db_name):
+#         try:
+#             con = mysql.connector.connect(
+#                 user='root',
+#                 password=os.getenv('MYSQL_ROOT_PASSWORD'),
+#                 host=os.getenv('MYSQL_HOST'),
+#                 port=os.getenv('MYSQL_PORT')
+#             )
+#             #con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+#             cursor = con.cursor()
+#             query = f'create database `{db_name}`;'
+#             cursor.execute(query)
+#             cursor.close()
+#             con.close()
+#             return True, ""
+#         except Exception as e:
+#             print(f"ERROR: {e}, {traceback.print_exc()}")
+#             return False, str(e) 
     
-    async def create_schema_in_db(self, db_name, schema):
-        try:
-            con = mysql.connector.connect(
-                user='root',
-                password=os.getenv('MYSQL_ROOT_PASSWORD'),
-                port=os.getenv('MYSQL_PORT'),
-                host=os.getenv('MYSQL_HOST'),
-                database=db_name
-            )
-            con.autocommit = True
-            # con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-            cursor = con.cursor()
-            # Split the SQL dump into separate statements
-            schema = schema.decode('UTF-8')
-            # Remove comments from the SQL dump
-            schema = re.sub(r'(--[^\n]*|/\*.*?\*/)', '', schema)
-            sql_commands = schema.split(';')
+#     async def create_schema_in_db(self, db_name, schema):
+#         try:
+#             con = mysql.connector.connect(
+#                 user='root',
+#                 password=os.getenv('MYSQL_ROOT_PASSWORD'),
+#                 port=os.getenv('MYSQL_PORT'),
+#                 host=os.getenv('MYSQL_HOST'),
+#                 database=db_name
+#             )
+#             con.autocommit = True
+#             # con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+#             cursor = con.cursor()
+#             # Split the SQL dump into separate statements
+#             schema = schema.decode('UTF-8')
+#             # Remove comments from the SQL dump
+#             schema = re.sub(r'(--[^\n]*|/\*.*?\*/)', '', schema)
+#             sql_commands = schema.split(';')
 
-            # Execute each statement
-            for command in sql_commands:
-                # Skip empty statements
-                if not command.strip():
-                    continue
+#             # Execute each statement
+#             for command in sql_commands:
+#                 # Skip empty statements
+#                 if not command.strip():
+#                     continue
 
-                # Skip CREATE SCHEMA statement if schema already exists
-                if 'CREATE SCHEMA' in command:
-                    try:
-                        cursor.execute(command)
-                    except mysql.connector.Error as err:
-                        print(f"Error creating schema in database {db_name}: {err}")
-                else:
-                    print("comm", command)
-                    try:
-                        cursor.execute(command)
-                    except mysql.connector.Error as err:
-                        print(f"Error creating schema in database {db_name}: {err}")
-            cursor.close()
-            con.close()
-            return True, ""
-        except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
-            return False, str(e)
+#                 # Skip CREATE SCHEMA statement if schema already exists
+#                 if 'CREATE SCHEMA' in command:
+#                     try:
+#                         cursor.execute(command)
+#                     except mysql.connector.Error as err:
+#                         print(f"Error creating schema in database {db_name}: {err}")
+#                 else:
+#                     print("comm", command)
+#                     try:
+#                         cursor.execute(command)
+#                     except mysql.connector.Error as err:
+#                         print(f"Error creating schema in database {db_name}: {err}")
+#             cursor.close()
+#             con.close()
+#             return True, ""
+#         except Exception as e:
+#             print(f"ERROR: {e}, {traceback.print_exc()}")
+#             return False, str(e)
 
-    async def get_tables_from_schema_id(self, schema_id):
-        try:
-            con = mysql.connector.connect(
-                user='root',
-                password=os.getenv('MYSQL_ROOT_PASSWORD'),
-                port=os.getenv('MYSQL_PORT'),
-                host=os.getenv('MYSQL_HOST'),
-                database=schema_id
-            )
-            con.autocommit = True
-            cursor = con.cursor()
-            cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema='public'")
-            table_meta = cursor.fetchall()
-            print(table_meta)
-            table_list = [x[0] for x in table_meta]
-            cursor.close()
-            con.close()
-            return table_list, ""
-        except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
-            return None, str(e)
+#     async def get_tables_from_schema_id(self, schema_id):
+#         try:
+#             con = mysql.connector.connect(
+#                 user='root',
+#                 password=os.getenv('MYSQL_ROOT_PASSWORD'),
+#                 port=os.getenv('MYSQL_PORT'),
+#                 host=os.getenv('MYSQL_HOST'),
+#                 database=schema_id
+#             )
+#             con.autocommit = True
+#             cursor = con.cursor()
+#             cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema='public'")
+#             table_meta = cursor.fetchall()
+#             print(table_meta)
+#             table_list = [x[0] for x in table_meta]
+#             cursor.close()
+#             con.close()
+#             return table_list, ""
+#         except Exception as e:
+#             print(f"ERROR: {e}, {traceback.print_exc()}")
+#             return None, str(e)
     
-    async def get_table_info(self, db_name, table_name):
-        try:
-            con = mysql.connector.connect(
-                user='root',
-                password=os.getenv('MYSQL_ROOT_PASSWORD'),
-                port=os.getenv('MYSQL_PORT'),
-                host=os.getenv('MYSQL_HOST'),
-                database=db_name
-            )
-            cur = con.cursor()
-            cur.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name='{table_name}';")
-            columns = cur.fetchall()
-            cur.execute(
-                f"SELECT TABLE_NAME,COLUMN_NAME,CONSTRAINT_NAME, REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME = '{table_name}';")
-            related_tables = cur.fetchall()
-            table_info = {table_name: {'columns': columns, 'references': {}}}
-            for row in related_tables:
-                related_table_name = row[0]
-                related_table_column_name = row[1]
-                if 'references' not in table_info:
-                    table_info['references'] = {}
-                if related_table_name not in table_info['references']:
-                    cur.execute(
-                        f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name='{related_table_name}';")
-                    related_table_columns = cur.fetchall()
-                    table_info['references'][related_table_name] = {'columns': related_table_columns, 'referenced_by': []}
-                table_info['references'][related_table_name]['referenced_by'].append(
-                    {'table_name': table_name, 'column_name': related_table_column_name})
-            cur.close()
-            con.close()
-            return table_info, ""
-        except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
-            return None, str(e)
+#     async def get_table_info(self, db_name, table_name):
+#         try:
+#             con = mysql.connector.connect(
+#                 user='root',
+#                 password=os.getenv('MYSQL_ROOT_PASSWORD'),
+#                 port=os.getenv('MYSQL_PORT'),
+#                 host=os.getenv('MYSQL_HOST'),
+#                 database=db_name
+#             )
+#             cur = con.cursor()
+#             cur.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name='{table_name}';")
+#             columns = cur.fetchall()
+#             cur.execute(
+#                 f"SELECT TABLE_NAME,COLUMN_NAME,CONSTRAINT_NAME, REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME = '{table_name}';")
+#             related_tables = cur.fetchall()
+#             table_info = {table_name: {'columns': columns, 'references': {}}}
+#             for row in related_tables:
+#                 related_table_name = row[0]
+#                 related_table_column_name = row[1]
+#                 if 'references' not in table_info:
+#                     table_info['references'] = {}
+#                 if related_table_name not in table_info['references']:
+#                     cur.execute(
+#                         f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name='{related_table_name}';")
+#                     related_table_columns = cur.fetchall()
+#                     table_info['references'][related_table_name] = {'columns': related_table_columns, 'referenced_by': []}
+#                 table_info['references'][related_table_name]['referenced_by'].append(
+#                     {'table_name': table_name, 'column_name': related_table_column_name})
+#             cur.close()
+#             con.close()
+#             return table_info, ""
+#         except Exception as e:
+#             print(f"ERROR: {e}, {traceback.print_exc()}")
+#             return None, str(e)
 
-    async def get_create_table_statements(self, schema, table_name):
-        table_names = [table_name]
-        table_queries = set()
-        # Get create table statement for the given table name
-        pattern = f'CREATE TABLE public.{table_name}.*?;'
-        match = re.search(pattern, schema, re.DOTALL)
-        if match:
-            table_queries.add(match.group())
-            # Get foreign key related tables
-            pattern = f'ALTER TABLE ONLY public.{table_name}\n.*?REFERENCES public.(\w+).*?;'
-            fk_matches = re.findall(pattern, schema)
-            for fk_match in fk_matches:
-                if fk_match not in table_names:
-                    table_names.append(fk_match)
-        else:
-            return None
-        # Get create table statements for foreign key related tables
-        for table_name in table_names:
-            pattern = f'CREATE TABLE public.{table_name}.*?;'
-            match = re.search(pattern, schema, re.DOTALL)
-            if match:
-                table_queries.add(match.group())
-        return table_queries
+#     async def get_create_table_statements(self, schema, table_name):
+#         table_names = [table_name]
+#         table_queries = set()
+#         # Get create table statement for the given table name
+#         pattern = f'CREATE TABLE public.{table_name}.*?;'
+#         match = re.search(pattern, schema, re.DOTALL)
+#         if match:
+#             table_queries.add(match.group())
+#             # Get foreign key related tables
+#             pattern = f'ALTER TABLE ONLY public.{table_name}\n.*?REFERENCES public.(\w+).*?;'
+#             fk_matches = re.findall(pattern, schema)
+#             for fk_match in fk_matches:
+#                 if fk_match not in table_names:
+#                     table_names.append(fk_match)
+#         else:
+#             return None
+#         # Get create table statements for foreign key related tables
+#         for table_name in table_names:
+#             pattern = f'CREATE TABLE public.{table_name}.*?;'
+#             match = re.search(pattern, schema, re.DOTALL)
+#             if match:
+#                 table_queries.add(match.group())
+#         return table_queries
 
 
 class postgresql_database(Database):
