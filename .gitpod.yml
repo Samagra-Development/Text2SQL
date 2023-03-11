@@ -5,13 +5,13 @@
 # Learn more from ready-to-use templates: https://www.gitpod.io/docs/introduction/getting-started/quickstart
 
 tasks:
-  - name: Setup Docker
-    command: docker-compose -f docker-compose.gitpod.yaml up -d
   - name: Setup and Start Python server
+    before: mv ./.env.sample ./.env
     init: |
       python3 -m venv venv
       source venv/bin/activate
       pip3 install -r requirements.txt
+      docker-compose -f docker-compose.gitpod.yml up -d
     command:  
       python3 src/server/app.py 
 
