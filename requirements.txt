@@ -5,3 +5,4 @@ git+https://github.com/ChakshuGautam/ChatGPT.git
 psycopg2
 python-dotenv
 openai
+mysql-connector-python
