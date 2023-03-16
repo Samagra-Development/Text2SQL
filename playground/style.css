@@ -1,0 +1,27 @@
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 20px;
+}
+  
+.card {
+    background-color: #fff;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    padding: 20px;
+}
+
+.card h2 {
+    font-size: 24px;
+    margin-top: 0;
+}
+
+.card p {
+    font-size: 18px;
+    margin-bottom: 0;
+}
+
+.bg-white {
+    padding: auto;
+}
+  

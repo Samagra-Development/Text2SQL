@@ -163,3 +163,6 @@ src/server/accounts.py
 
 mysql-data
 postgres-data
+
+playground/node_modules
+frontend/node_modules

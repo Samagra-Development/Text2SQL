@@ -2,6 +2,7 @@ import os
 
 from quart import Quart, request, abort, current_app
 from sql_formatter.core import format_sql
+from quart_cors import cors
 
 from utils import detect_lang, chatGPT, get_response, validate_schema_file
 from http import HTTPStatus
@@ -16,6 +17,7 @@ from db.db_helper import database_factory
 from functools import wraps
 
 app = Quart(__name__)
+app = cors(app, allow_origin='*')
 
 def auth_required(func):
     @wraps(func)
@@ -57,7 +59,6 @@ async def prompt():
         chat_gpt_prompt = SUBJECT_QUERY_PROMPT % (tables, prompt)
         chat_gpt_response = await chatGPT(chat_gpt_prompt, app)
         # todo: add validators for chatgpt responses
-        print(chat_gpt_response)
         chat_gpt_response = json.loads(chat_gpt_response)
         table_list = list()
         res, err_msg = await db.get_table_info(schema_id, chat_gpt_response['subject'])
