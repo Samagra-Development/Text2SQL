@@ -72,7 +72,8 @@
     "react-app-polyfill": "^3.0.0",
     "react-bootstrap": "^1.6.5",
     "react-frame-component": "^4.1.1",
-    "react-is": "^18.2.0"
+    "react-is": "^18.2.0",
+    "react-spinners": "^0.13.8"
   },
   "devDependencies": {
     "@babel/cli": "^7.20.7",

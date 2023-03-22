@@ -100,8 +100,9 @@ async def translate_online(prompt_text, source_lang, target_lang, context):
     return resp["text"]
 
 
-async def get_response(response, status_code, http_status_code=200, err_msg=""):
+async def get_response(response, status_code, http_status_code=200, err_msg="", data=""):
     if err_msg == "" or err_msg is None:
+        response["query_data"] = data
         return {"result": {"code": status_code, "data": response}, "error": {}}, http_status_code
     else:
         http_status_code = 400 if http_status_code == 200 else http_status_code

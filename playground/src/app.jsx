@@ -2,6 +2,7 @@ import { useState, createRef, Component } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import 'react-app-polyfill/ie11';
 import { shouldRender } from '@rjsf/utils';
+import ClipLoader from "react-spinners/ClipLoader";
 
 const monacoEditorOptions = {
   minimap: {
@@ -10,20 +11,30 @@ const monacoEditorOptions = {
   automaticLayout: true,
 };
 
-
 class ChatGPTResponse extends Component {
   constructor(props) {
     super(props)
-    this.state = { ...props.response }
+    this.state = { ...props }
   }
   render() {
+    const query_data = JSON.stringify(this.props.query_data)
     return (
-      <div className='col-sm-6'>
-        <h3>
-          Query
-        </h3>
+      <div className='col-sm-6' style={{width: '100%', maxWidth: '600px', margin: '0 auto'}}>
         <div>
-          <p>{this.props.response}</p>
+          <h3>
+            Query
+          </h3>
+          <div>
+            <p>{this.props.query}</p>
+          </div>          
+        </div>
+        <div style={{width: '100%'}}>
+        <h3>
+            Query Data
+          </h3>
+          <div style={{width: '100%'}}>
+            <p className='query-data'>{query_data}</p>
+          </div> 
         </div>
       </div>
     )
@@ -113,10 +124,11 @@ class Selector extends Component {
   }
 }
 
-const Search = ({schemaId, prompts, handleSearch}) => {
+const Search = ({schemaId, prompts, handleSearch, startLoading}) => {
   const [text, setText] = useState("");
   const onSubmit = evt => {
     evt.preventDefault();
+    startLoading()
     if (text === "" || schemaId == "") {
       alert("Please enter something or select a schema!");
     } else {
@@ -176,7 +188,7 @@ const Search = ({schemaId, prompts, handleSearch}) => {
 class DbSelector extends Component {
   constructor(props) {
     super(props);
-    this.state = { current: '', databases: this.props.databases, allschemas: [], schemaId: '', schema: '', apiresponse: '', prompts: [] };
+    this.state = { current: '', databases: this.props.databases, allschemas: [], schemaId: '', schema: '', query: '', query_data : '', prompts: [], loading: false };
   }
 
   handleChange = (event) => {
@@ -200,7 +212,12 @@ class DbSelector extends Component {
   handleSearch = (apiresponse) => {
     const apiresponseParsed = JSON.parse(apiresponse)
     console.log(apiresponseParsed, typeof apiresponseParsed);
-    this.setState({apiresponse: apiresponseParsed.result.data.query})
+    this.setState({query: apiresponseParsed.result.data.query, query_data: apiresponseParsed.result.data.query_data})
+    this.setState({loading: false})
+  }
+
+  startLoading = () => {
+    this.setState({loading: true})
   }
 
   onSchemaEdited = (schema) => this.setState({ schema, shareURL: null });
@@ -209,9 +226,10 @@ class DbSelector extends Component {
     let databaseTypes = Object.keys(this.state.databases)
     databaseTypes = databaseTypes.filter(element => element != 'default')
     let options = databaseTypes.map(element => <option value={element}>{element}</option>)
+    let loading = this.state.loading
     return (
-      <div className='container-fluid'>
-      <div className='page-header'>
+      <div className='container-fluid'> 
+        <div className='page-header'>
         <h1>Text2SQL Playground</h1>
         <div className='row'>
           <div className='col-sm-6'>
@@ -233,12 +251,24 @@ class DbSelector extends Component {
           <Editor title='DB Schema' code={this.state.schema} onChange={this.onSchemaEdited} readOnly={true} langauge='sql' />
           <div>
             <div className='col-sm-12'>
-              <Search schemaId={this.state.schemaId} prompts={this.state.prompts} handleSearch={this.handleSearch}/>
+              <Search schemaId={this.state.schemaId} prompts={this.state.prompts} handleSearch={this.handleSearch} startLoading={this.startLoading}/>
             </div>
           </div>
         </div>
         <div className='col-sm-5'>
-          <ChatGPTResponse response = {this.state.apiresponse}></ChatGPTResponse>
+        { loading ? 
+          (
+            <div className='vertical-center align-items-center'>
+            <div className='container text-center'> 
+          <ClipLoader
+          loading={loading}
+          size={80}
+          aria-label="Loading Spinner"
+          data-testid="loader"
+        /> </div> </div>
+        ) :
+          <ChatGPTResponse query = {this.state.query} query_data = {this.state.query_data}></ChatGPTResponse>
+        }
         </div>
         <div className='col-sm-12'>
           <p style={{ textAlign: 'center' }}>

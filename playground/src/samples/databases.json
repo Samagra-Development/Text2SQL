@@ -1,0 +1,23 @@
+{
+    "mssql": [
+
+    ],
+    "mysql": {
+        "schemas": ["advising", "alimento"],
+        "details": {
+            "advising" : {
+                "schemaId": "",
+                "sql": "advising.sql",
+                "samplePrompts": ["", ""] 
+            },
+            "alimento" : {
+                "schemaId": "",
+                "sql": "alimento.sql",
+                "samplePrompts": ["", ""] 
+            }   
+        }
+    },
+    "postgres": [
+
+    ]
+}

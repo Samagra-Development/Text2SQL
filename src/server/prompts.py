@@ -1,6 +1,6 @@
 SUBJECT_QUERY_PROMPT = """"Subject" is defined as the table about which a "natural language statement" query is expressed. "Query params" includes only the relevant tables excluding cache tables that need to be joined/queried for the selection of the subject.
-Assuming a database has the following tables - "%s". You can assume any linkage between the above tables and generate a SQL Schema with minimal number of tables (top 5) that can be inserted in a Postgresql DB. Store the value as "schema.sql"
-Given this query in natural language - "%s", and the "schema.sql" generated above, return the "subject" and query params.
+Assuming a database has the following tables in the form of "schema_name.table_name" - "%s". You can assume any linkage between the above tables and generate a SQL Schema with minimal number of tables (top 5) that can be inserted in a Postgresql DB. Store the value as "schema.sql"
+Given this query in natural language - "%s", and the "schema.sql" generated above, return the "subject" and query params where "subject" is the complete table name.
 -----------------------------
 Format the answer in JSON code as follows
 { subject: <name of the table containing subject>

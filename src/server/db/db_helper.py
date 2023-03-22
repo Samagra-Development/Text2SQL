@@ -38,6 +38,10 @@ class Database(abc.ABC):
     async def get_create_table_statements(self, schema, table_name):
         pass
 
+    @abc.abstractclassmethod
+    async def validate_sql(self, db_name, query):
+        pass
+
 
 class mysql_database(Database):
     async def get_connection():
@@ -126,7 +130,8 @@ class mysql_database(Database):
             )
             con.autocommit = True
             cursor = con.cursor()
-            cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema='public'")
+            # cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema='public'")
+            cursor.execute("SELECT CONCAT(table_schema, '.', table_name) AS table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('information_schema', 'mysql', 'performance_schema', 'sys');")
             table_meta = cursor.fetchall()
             print(table_meta)
             table_list = [x[0] for x in table_meta]
@@ -146,15 +151,17 @@ class mysql_database(Database):
                 host=os.getenv('MYSQL_HOST'),
                 database=db_name
             )
+            table_schema = table_name.split('.')[0]
+            table_second_name = table_name.split('.')[1]
             cur = con.cursor()
-            cur.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name='{table_name}';")
+            cur.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name='{table_second_name}' and table_schema = '{table_schema}';")
             columns = cur.fetchall()
             cur.execute(
-                f"SELECT TABLE_NAME,COLUMN_NAME,CONSTRAINT_NAME, REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME = '{table_name}';")
+                f"SELECT TABLE_NAME,COLUMN_NAME,TABLE_SCHEMA,CONSTRAINT_NAME, REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME = '{table_second_name}' and REFERENCED_TABLE_SCHEMA = '{table_schema}';")
             related_tables = cur.fetchall()
             table_info = {table_name: {'columns': columns, 'references': {}}}
             for row in related_tables:
-                related_table_name = row[0]
+                related_table_name = row[2] + '.' + row[0]
                 related_table_column_name = row[1]
                 if 'references' not in table_info:
                     table_info['references'] = {}
@@ -195,6 +202,30 @@ class mysql_database(Database):
             if match:
                 table_queries.add(match.group())
         return table_queries
+    
+    async def validate_sql(self, db_name, query):
+        try:
+            con = mysql.connector.connect(
+                user='root',
+                password=os.getenv('MYSQL_ROOT_PASSWORD'),
+                port=os.getenv('MYSQL_PORT'),
+                host=os.getenv('MYSQL_HOST'),
+                database=db_name
+            )
+            cur = con.cursor()
+            cur.execute(query)
+            metadata = []
+            rows = cur.fetchall()
+            for row in rows:
+                metadata_dict = dict(zip(cur.column_names, row))
+                metadata.append(metadata_dict)
+            con.close()
+            cur.close()
+            return True, metadata
+        except Exception as e:
+            print(f"ERROR: {e}, {traceback.print_exc()}")
+            return None, str(e)
+            # return False
 
 
 class postgresql_database(Database):
@@ -211,11 +242,11 @@ class postgresql_database(Database):
     async def create_database_and_schema(self, db_name):
         try:
             con = psycopg2.connect(
+                database="postgres",
                 user=os.getenv('POSTGRES_USER'),
                 password=os.getenv('POSTGRES_PASSWORD'),
                 port=os.getenv('POSTGRES_PORT'),
                 host=os.getenv('POSTGRES_HOST'),
-                dbname=os.getenv('POSTGRES_DB')
             )
             con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
             cursor = con.cursor()
@@ -298,9 +329,10 @@ class postgresql_database(Database):
             )
             con.autocommit = True
             cursor = con.cursor()
-            cursor.execute("select * from pg_tables where schemaname = 'public';")
+            cursor.execute("SELECT table_schema || '.' || table_name as table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema') ORDER BY table_schema, table_name;")
             table_meta = cursor.fetchall()
-            table_list = [x[1] for x in table_meta]
+            table_list = [x[0] for x in table_meta]
+            print(table_list)
             cursor.close()
             con.close()
             return table_list, ""
@@ -319,23 +351,26 @@ class postgresql_database(Database):
                 dbname=db_name
             )
             cur = con.cursor()
-            cur.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name='{table_name}';")
+            table_schema = table_name.split('.')[0]
+            table_second_name = table_name.split('.')[1]
+            cur.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_schema = '{table_schema}' AND table_name = '{table_second_name}';")
             columns = cur.fetchall()
             cur.execute(
-                f"SELECT tc.table_name, kcu.column_name, ccu.table_name AS referenced_table_name, ccu.column_name AS referenced_column_name FROM information_schema.table_constraints tc JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name JOIN information_schema.constraint_column_usage ccu ON ccu.constraint_name = tc.constraint_name WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='{table_name}';")
+                f"SELECT tc.table_name, kcu.column_name, ccu.table_name AS referenced_table_name, ccu.column_name AS referenced_column_name, ccu.table_schema as reference_table_schema FROM information_schema.table_constraints tc JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name JOIN information_schema.constraint_column_usage ccu ON ccu.constraint_name = tc.constraint_name WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='{table_second_name}' AND tc.table_schema='{table_schema}';")
             related_tables = cur.fetchall()
             table_info = {table_name: {'columns': columns, 'references': {}}}
             for row in related_tables:
                 related_table_name = row[2]
                 related_table_column_name = row[3]
+                related_table_schema = row[4]
                 if 'references' not in table_info:
                     table_info['references'] = {}
-                if related_table_name not in table_info['references']:
+                if (related_table_schema + '.' + related_table_name) not in table_info['references']:
                     cur.execute(
-                        f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name='{related_table_name}';")
+                        f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name='{related_table_name}' and table_schema = '{related_table_schema}';")
                     related_table_columns = cur.fetchall()
-                    table_info['references'][related_table_name] = {'columns': related_table_columns, 'referenced_by': []}
-                table_info['references'][related_table_name]['referenced_by'].append(
+                    table_info['references'][related_table_schema + '.' + related_table_name] = {'columns': related_table_columns, 'referenced_by': []}
+                table_info['references'][related_table_schema + '.' + related_table_name]['referenced_by'].append(
                     {'table_name': table_name, 'column_name': related_table_column_name})
             cur.close()
             con.close()
@@ -368,6 +403,30 @@ class postgresql_database(Database):
             if match:
                 table_queries.add(match.group())
         return table_queries
+    
+    async def validate_sql(self, db_name, query):
+        try:
+            con = psycopg2.connect(
+                user=os.getenv('POSTGRES_USER'),
+                password=os.getenv('POSTGRES_PASSWORD'),
+                port=os.getenv('POSTGRES_PORT'),
+                host=os.getenv('POSTGRES_HOST'),
+                dbname=db_name
+            )
+            cur = con.cursor()
+            cur.execute(query)
+            rows = cur.fetchall()
+            metadata = []
+            for row in rows:
+                metadata_dict = dict(zip([desc[0] for desc in cur.description], row))
+                metadata.append(metadata_dict)
+            con.close()
+            cur.close()
+            return True, metadata
+        except Exception as e:
+            print(f"ERROR: {e}, {traceback.print_exc()}")
+            return None, str(e)
+            # return False
 
 
 class database_factory:

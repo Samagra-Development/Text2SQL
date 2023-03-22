@@ -25,3 +25,14 @@
     padding: auto;
 }
   
+.vertical-center {
+    min-height: 300px;  /* Fallback for browsers do NOT support vh unit */
+  
+    display: flex;
+    align-items: center;
+}
+
+.query-data {
+    word-break: break-all;
+    white-space: normal;
+}

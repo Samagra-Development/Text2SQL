@@ -55,7 +55,7 @@ async def prompt():
     if status is True:
         tables_list, err = await db.get_tables_from_schema_id(schema_id)
         if tables_list is not None:
-            tables = ",".join(tables_list)
+            tables = ', '.join([f"'{elem}'" for elem in tables_list])
         chat_gpt_prompt = SUBJECT_QUERY_PROMPT % (tables, prompt)
         chat_gpt_response = await chatGPT(chat_gpt_prompt, app)
         # todo: add validators for chatgpt responses
@@ -70,6 +70,8 @@ async def prompt():
         print("prompt ", query_prompt)
         chat_gpt_query_response = await chatGPT(query_prompt, app)
         print(chat_gpt_query_response)
+        query = chat_gpt_query_response.replace('\n', ' ').replace("'''", '').replace('```', '')
+        validate_flag, data = await db.validate_sql(schema_id, query)
         response = {"query": chat_gpt_query_response.replace('\n', ' ').replace("'''", '').replace('```', '')}
         status_code = ResponseCodes.QUERY_GENERATED.value
         http_status_code = HTTPStatus.OK
@@ -78,9 +80,10 @@ async def prompt():
         status_code = ResponseCodes.INSERT_PROMPT_ERROR.value
         http_status_code = HTTPStatus.INTERNAL_SERVER_ERROR
         err_msg = err
+        data=err_msg
     end = time.time()
     print(end - start)
-    return await get_response(response=response, status_code=status_code, http_status_code=http_status_code, err_msg=err_msg)
+    return await get_response(response=response, status_code=status_code, http_status_code=http_status_code, err_msg=err_msg, data=data)
 
 
 # todo: add option for getting schema via post body too
