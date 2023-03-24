@@ -17,7 +17,7 @@ from db.db_helper import database_factory
 from functools import wraps
 
 app = Quart(__name__)
-app = cors(app, allow_origin='*')
+# app = cors(app)
 
 def auth_required(func):
     @wraps(func)
@@ -38,7 +38,6 @@ def auth_required(func):
 @app.route('/')
 async def home():
     return {'status': 'WE ARE LIVE'}
-
 
 @app.route('/prompt', methods=['POST'])
 @auth_required

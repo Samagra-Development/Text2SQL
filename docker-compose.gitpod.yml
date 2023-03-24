@@ -30,3 +30,14 @@ services:
     env_file:
       - .env
     restart: always
+
+  postgres-client:
+    image: postgres:latest
+    ports:
+      - '15433:5432'
+    environment:
+      - POSTGRES_USER=postgresql
+      - POSTGRES_PASSWORD=yoursupersecret
+    restart: always
+    volumes: 
+      - ./postgres-client-data:/var/lib/postgresql/data

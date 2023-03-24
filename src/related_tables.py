@@ -154,7 +154,6 @@ def get_create_table_statements(schema_file, table_name):
         return table_queries
 
 
-
 if __name__ == "__main__":
     res = get_create_table_statements('src/sample-schema.sql', 'assessment')
     for r in res:

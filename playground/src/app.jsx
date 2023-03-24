@@ -3,6 +3,7 @@ import MonacoEditor from '@monaco-editor/react';
 import 'react-app-polyfill/ie11';
 import { shouldRender } from '@rjsf/utils';
 import ClipLoader from "react-spinners/ClipLoader";
+import DataTable from "./DataTable";
 
 const monacoEditorOptions = {
   minimap: {
@@ -19,22 +20,23 @@ class ChatGPTResponse extends Component {
   render() {
     const query_data = JSON.stringify(this.props.query_data)
     return (
-      <div className='col-sm-6' style={{width: '100%', maxWidth: '600px', margin: '0 auto'}}>
+      <div className='w-full'>
         <div>
-          <h3>
-            Query
-          </h3>
-          <div>
-            <p>{this.props.query}</p>
-          </div>          
+          {/* <h3>
+      Query
+    </h3> */}
+          {/* <div>
+      <p>{this.props.query}</p>
+    </div> */}
         </div>
-        <div style={{width: '100%'}}>
-        <h3>
+        <div className="w-full">
+          <h3 className="text-xl font-bold mb-4 text-left">
             Query Data
           </h3>
-          <div style={{width: '100%'}}>
-            <p className='query-data'>{query_data}</p>
-          </div> 
+          <DataTable data={JSON.parse(query_data)} />
+          {/* <div style={{width: '100%'}}>
+      <p className='query-data'>{query_data}</p>
+    </div> */}
         </div>
       </div>
     )
@@ -84,7 +86,7 @@ class Editor extends Component {
           theme='vs-light'
           onChange={this.onCodeChange}
           height={400}
-          options={{monacoEditorOptions, readOnly: this.state.readOnly}}
+          options={{ monacoEditorOptions, readOnly: this.state.readOnly }}
         />
       </div>
     );
@@ -124,8 +126,8 @@ class Selector extends Component {
   }
 }
 
-const Search = ({schemaId, prompts, handleSearch, startLoading}) => {
-  const [text, setText] = useState("");
+const Search = ({ schemaId, prompts, handleSearch, startLoading }) => {
+  const [text, setText] = useState("Number of students in grade 8 from District KINNAUR");
   const onSubmit = evt => {
     evt.preventDefault();
     startLoading()
@@ -144,56 +146,76 @@ const Search = ({schemaId, prompts, handleSearch, startLoading}) => {
           prompt: text
         })
       };
-      fetch('http://localhost:5078/prompt', options).then(response => response.text()).then(response => handleSearch(response));
+      fetch('https://api.t2s.samagra.io/prompt', options).then(response => response.text()).then(response => handleSearch(response));
     }
   };
 
   const handleClick = (prompt) => {
+    console.log({ prompt });
     setText(prompt)
   }
 
   const onChange = evt => setText(evt.target.value);
-  const allPrompts = prompts.map(prompt => <div className="card" onClick={() => handleClick(prompt)}>
-                                              <p>{prompt}</p>
-                                           </div>)
+  const allPrompts = (
+    <select
+      className="w-full py-2 px-3 border border-gray-300 bg-white text-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      onChange={(e) => handleClick(e.target.value)}
+    >
+      {prompts.map((prompt) => (
+        <option key={prompt} value={prompt}>
+          {prompt}
+        </option>
+      ))}
+    </select>
+  );
+  // const allPrompts = prompts.map(prompt => <div className="card" onClick={() => handleClick(prompt)}>
+  //   <p>{prompt}</p>
+  // </div>)
   return (
-    <div>
-      <div className="d-flex justify-content-center">
-        <form onSubmit={onSubmit} className="bg-gray-200 p-5">
+    <div className='mb-4'>
+      <div className="flex justify-center mb-4">
+        <form onSubmit={onSubmit} className="bg-gray-200 p-3 flex items-center w-full rounded">
           <input
             type="text"
             name="text"
             placeholder="Enter prompt..."
             value={text}
+            defaultValue="Number of students in grade 8 from District KINNAUR"
             onChange={onChange}
-            className="bg-white p-2 col-sm-9 outline-none h-100"
+            className="bg-white p-2 w-10/12 outline-none h-full rounded-l"
           />
-          <button type="submit" className="ml-20 text-center btn btn-primary bg-white border-l">
-            Generate Query
+          <button
+            type="submit"
+            className="ml-1 text-center bg-white text-blue-600 border-l border-blue-600 py-2 px-4 flex items-center justify-center rounded-r"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l5.364 5.363a1 1 0 11-1.414 1.414l-5.364-5.363A6 6 0 012 8z" />
+            </svg>
+            Search
           </button>
         </form>
-      </div>
+      </div >
 
-      <div className="card-container card-group">
+      <div className="card-container">
         <div className="card-container">
-        <h3>Prompts</h3> 
-        <hr></hr>
-        {allPrompts}
+          <h3 className="text-lg font-semibold">Prompts</h3>
+          <hr className="border-gray-400"></hr>
+          {allPrompts}
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
 class DbSelector extends Component {
   constructor(props) {
     super(props);
-    this.state = { current: '', databases: this.props.databases, allschemas: [], schemaId: '', schema: '', query: '', query_data : '', prompts: [], loading: false };
+    this.state = { current: '', databases: this.props.databases, allschemas: [], schemaId: '', schema: '', query: '', query_data: '', prompts: [], loading: false };
   }
 
   handleChange = (event) => {
     const allschemas = this.props.databases[event.target.value]["schemas"]
-    this.setState({allschemas: allschemas, current: event.target.value })
+    this.setState({ allschemas: allschemas, current: event.target.value })
   }
 
   handleSchemaChange = (schemVal) => {
@@ -201,23 +223,23 @@ class DbSelector extends Component {
     const prompts = this.props.databases[this.state.current]["details"][schemVal]["samplePrompts"]
     let sqlfile = ''
     fetch('/' + this.state.databases[this.state.current]["details"][schemVal]["sql"])
-    .then(response => response.text())
-    .then(data => {
-      sqlfile = data // do something with the SQL string
-      console.log(sqlfile);
-      this.setState({schemaId: schemaId, schema: sqlfile, prompts: prompts})
-    });
+      .then(response => response.text())
+      .then(data => {
+        sqlfile = data // do something with the SQL string
+        console.log(sqlfile);
+        this.setState({ schemaId: schemaId, schema: sqlfile, prompts: prompts })
+      });
   }
 
   handleSearch = (apiresponse) => {
     const apiresponseParsed = JSON.parse(apiresponse)
     console.log(apiresponseParsed, typeof apiresponseParsed);
-    this.setState({query: apiresponseParsed.result.data.query, query_data: apiresponseParsed.result.data.query_data})
-    this.setState({loading: false})
+    this.setState({ query: apiresponseParsed.result.data.query, query_data: apiresponseParsed.result.data.query_data })
+    this.setState({ loading: false })
   }
 
   startLoading = () => {
-    this.setState({loading: true})
+    this.setState({ loading: true })
   }
 
   onSchemaEdited = (schema) => this.setState({ schema, shareURL: null });
@@ -228,53 +250,57 @@ class DbSelector extends Component {
     let options = databaseTypes.map(element => <option value={element}>{element}</option>)
     let loading = this.state.loading
     return (
-      <div className='container-fluid'> 
+      <div className='container mx-auto px-4'>
         <div className='page-header'>
-        <h1>Text2SQL Playground</h1>
-        <div className='row'>
-          <div className='col-sm-6'>
-            <form className="form_rjsf_themeSelector">
-              <div className="form-group field field-string">
-                  <select id="rjsf_themeSelector" name="rjsf_themeSelector" className="form-control" aria-describedby="rjsf_themeSelector__error rjsf_themeSelector__description rjsf_themeSelector__help" onChange={this.handleChange}>
-                      <option value="default">Select database type</option>
-                      {options}
+          <h1 className="text-3xl font-bold mb-8">
+            Natural Language Data Query
+          </h1>
+          <div className='flex flex-col sm:flex-row sm:space-x-6 items-center'>
+            <div className='w-full sm:w-1/2'>
+              <form className="form_rjsf_themeSelector">
+                <div className="form-group field field-string">
+                  <select id="rjsf_themeSelector" name="rjsf_themeSelector" className="w-full py-2 px-3 border border-gray-300 bg-white text-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" aria-describedby="rjsf_themeSelector__error rjsf_themeSelector__description rjsf_themeSelector__help" onChange={this.handleChange}>
+                    <option value="default">Select database type</option>
+                    {options}
                   </select>
-              </div>
-            </form>
-          </div>
-          <div className='col-sm-6'>
-            <Selector schemas={this.state.allschemas} onChange={this.handleSchemaChange}/> 
-          </div>
-        </div>
-        </div>
-        <div className='col-sm-7'>
-          <Editor title='DB Schema' code={this.state.schema} onChange={this.onSchemaEdited} readOnly={true} langauge='sql' />
-          <div>
-            <div className='col-sm-12'>
-              <Search schemaId={this.state.schemaId} prompts={this.state.prompts} handleSearch={this.handleSearch} startLoading={this.startLoading}/>
+                </div>
+              </form>
+            </div>
+            <div className='w-full sm:w-1/2'>
+              <Selector schemas={this.state.allschemas} onChange={this.handleSchemaChange} />
             </div>
           </div>
         </div>
-        <div className='col-sm-5'>
-        { loading ? 
-          (
-            <div className='vertical-center align-items-center'>
-            <div className='container text-center'> 
-          <ClipLoader
-          loading={loading}
-          size={80}
-          aria-label="Loading Spinner"
-          data-testid="loader"
-        /> </div> </div>
-        ) :
-          <ChatGPTResponse query = {this.state.query} query_data = {this.state.query_data}></ChatGPTResponse>
-        }
+        <div className='w-full sm:w-7/12'>
+          {/* <Editor title='DB Schema' code={this.state.schema} onChange={this.onSchemaEdited} readOnly={true} langauge='sql' /> */}
+          <div>
+            <div className='w-full'>
+              <Search schemaId={this.state.schemaId} prompts={this.state.prompts} handleSearch={this.handleSearch} startLoading={this.startLoading} />
+            </div>
+          </div>
         </div>
-        <div className='col-sm-12'>
-          <p style={{ textAlign: 'center' }}>
-            Made with love by Suyash.
+        <div className='w-full sm:w-7/12'>
+          <div className="flex justify-start w-full">
+            {loading ? (
+              <div className='flex justify-center items-center'>
+                <div className='text-center'>
+                  <ClipLoader
+                    loading={loading}
+                    size={80}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
+                  />
+                </div>
+              </div>
+            ) : (
+              <ChatGPTResponse query={this.state.query} query_data={this.state.query_data} />
+            )}
+          </div>
+        </div>
+        <div className='w-full'>
+          <p className='text-center'>
             {import.meta.env.VITE_SHOW_NETLIFY_BADGE === 'true' && (
-              <div style={{ float: 'right' }}>
+              <div className='float-right'>
                 <a href='https://www.netlify.com'>
                   <img src='https://www.netlify.com/img/global/badges/netlify-color-accent.svg' />
                 </a>
@@ -312,14 +338,14 @@ class Playground extends Component {
         var xhr = new XMLHttpRequest();
 
         // define the function to be executed when the file has been loaded
-        xhr.onload = function(event) {
+        xhr.onload = function (event) {
           // get the SQL file data as a blob
-          var sqlBlob = new Blob([xhr.response], {type: 'application/sql'});
+          var sqlBlob = new Blob([xhr.response], { type: 'application/sql' });
 
           // do something with the SQL blob data
           const formData = new FormData();
           formData.append('schema', sqlBlob, "alimento.sql");
-          formData.append('schema_type', 'mysql');
+          formData.append('schema_type', dbType);
 
           const options = {
             method: 'POST',
@@ -329,11 +355,11 @@ class Playground extends Component {
             }
           };
 
-          fetch('http://localhost:5078/onboard', options)
+          fetch('https://api.t2s.samagra.io/onboard', options)
             .then(response => response.json())
-            .then(data => {databases[dbType]["details"][schema]["schemaId"] = data["result"]["data"]["schema_id"]})
+            .then(data => { databases[dbType]["details"][schema]["schemaId"] = data["result"]["data"]["schema_id"] })
             .catch(error => console.error(error));
-          };
+        };
 
         // open the file using the GET method
         xhr.open('GET', filePath);
@@ -346,7 +372,7 @@ class Playground extends Component {
       })
     })
     console.log(databases)
-    this.setState({databases: databases})
+    this.setState({ databases: databases })
   }
 
 

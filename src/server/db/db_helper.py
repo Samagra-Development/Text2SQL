@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 file = Path(__file__).resolve()
 parent, ROOT_FOLDER = file.parent, file.parents[2]
 load_dotenv(dotenv_path=f"{ROOT_FOLDER}/.env")
+from testcontainers.postgres import PostgresContainer
 
 class Database(abc.ABC):
     @abc.abstractclassmethod
@@ -243,8 +244,8 @@ class postgresql_database(Database):
         try:
             con = psycopg2.connect(
                 database="postgres",
-                user=os.getenv('POSTGRES_USER'),
-                password=os.getenv('POSTGRES_PASSWORD'),
+                user=os.getenv('POSTGRES_CLIENT_USER'),
+                password=os.getenv('POSTGRES_CLIENT_PASSWORD'),
                 port=os.getenv('POSTGRES_PORT'),
                 host=os.getenv('POSTGRES_HOST'),
             )
@@ -262,11 +263,11 @@ class postgresql_database(Database):
     async def create_schema_in_db(self, db_name, schema):
         try:
             con = psycopg2.connect(
-                user=os.getenv('POSTGRES_USER'),
-                password=os.getenv('POSTGRES_PASSWORD'),
+                database=db_name,
+                user=os.getenv('POSTGRES_CLIENT_USER'),
+                password=os.getenv('POSTGRES_CLIENT_PASSWORD'),
                 port=os.getenv('POSTGRES_PORT'),
                 host=os.getenv('POSTGRES_HOST'),
-                dbname=db_name
             )
             con.autocommit = True
             # con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
@@ -321,11 +322,11 @@ class postgresql_database(Database):
     async def get_tables_from_schema_id(self, schema_id):
         try:
             con = psycopg2.connect(
-                user=os.getenv('POSTGRES_USER'),
-                password=os.getenv('POSTGRES_PASSWORD'),
+                database=schema_id,
+                user=os.getenv('POSTGRES_CLIENT_USER'),
+                password=os.getenv('POSTGRES_CLIENT_PASSWORD'),
                 port=os.getenv('POSTGRES_PORT'),
                 host=os.getenv('POSTGRES_HOST'),
-                dbname=schema_id
             )
             con.autocommit = True
             cursor = con.cursor()
@@ -344,11 +345,11 @@ class postgresql_database(Database):
     async def get_table_info(self, db_name, table_name):
         try:
             con = psycopg2.connect(
-                user=os.getenv('POSTGRES_USER'),
-                password=os.getenv('POSTGRES_PASSWORD'),
+                database=db_name,
+                user=os.getenv('POSTGRES_CLIENT_USER'),
+                password=os.getenv('POSTGRES_CLIENT_PASSWORD'),
                 port=os.getenv('POSTGRES_PORT'),
                 host=os.getenv('POSTGRES_HOST'),
-                dbname=db_name
             )
             cur = con.cursor()
             table_schema = table_name.split('.')[0]
@@ -407,11 +408,11 @@ class postgresql_database(Database):
     async def validate_sql(self, db_name, query):
         try:
             con = psycopg2.connect(
-                user=os.getenv('POSTGRES_USER'),
-                password=os.getenv('POSTGRES_PASSWORD'),
-                port=os.getenv('POSTGRES_PORT'),
-                host=os.getenv('POSTGRES_HOST'),
-                dbname=db_name
+                database="postgres",
+                user=os.getenv('POSTGRES_QUERY_USER'),
+                password=os.getenv('POSTGRES_QUERY_PASSWORD'),
+                port=os.getenv('POSTGRES_QUERY_PORT'),
+                host=os.getenv('POSTGRES_QUERY_HOST'),
             )
             cur = con.cursor()
             cur.execute(query)
