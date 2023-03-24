@@ -13,30 +13,43 @@ import Ajv2019 from 'ajv/dist/2019.js';
 import Ajv2020 from 'ajv/dist/2020.js';
 
 import Playground from './app';
+import './index.css'
 
 const databases = {
   "default": {
-    "schemas": [],
-    "details": {}
+    "schemas": ["esamwad"],
+    "details": {
+      "esamwad": {
+        "schemaId": "",
+        "sql": "./samples/esamwad.sql",
+        "samplePrompts": ["Get me the top 10 students"]
+      }
+    }
   },
   "mssql": {
     "schemas": [],
     "details": {}
   },
-  "mysql": {
-      "schemas": ["alimento"],
-      "details": {
-          "alimento" : {
-              "schemaId": "",
-              "sql": "src/samples/alimento.sql",
-              "samplePrompts": ["Get me all the customers", "Get me all the orders made for restaurant name Dominos"] 
-          }   
+  // "mysql": {
+  //   "schemas": ["alimento"],
+  //   "details": {
+  //     "alimento": {
+  //       "schemaId": "",
+  //       "sql": "src/samples/alimento.sql",
+  //       "samplePrompts": ["Get me all the customers", "Get me all the orders made for restaurant name Dominos"]
+  //     }
+  //   }
+  // },
+  "postgresql": {
+    "schemas": ["esamwad"],
+    "details": {
+      "esamwad": {
+        "schemaId": "",
+        "sql": "./samples/esamwad.sql",
+        "samplePrompts": ["Number of students in grade 8 from District KINNAUR", "Get all students in grade 8 from District KINNAUR with their school name and father name"]
       }
-  },
-  "postgres": {
-    "schemas": [],
-    "details": {}
+    }
   }
 }
 
-render(<Playground databases={databases}/>, document.getElementById('app'));
+render(<Playground databases={databases} />, document.getElementById('app'));
