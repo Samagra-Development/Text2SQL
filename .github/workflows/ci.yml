@@ -52,3 +52,4 @@ jobs:
           echo -en "\nBASIC_AUTH_PASSWORD=${{ secrets.APP_PASSWORD }}\n" >> .env
           echo -en "\nOPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}\n" >> .env
           docker-compose up -d --build
+          sh setup.sh

@@ -6,3 +6,4 @@ psycopg2
 python-dotenv
 openai
 mysql-connector-python
+testcontainers

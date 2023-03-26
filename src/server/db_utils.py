@@ -23,12 +23,12 @@ async def get_connection():
         raise Exception("Failed to connect to db")
 
 
-async def insert_into_schema_holder(schema_file, schema_type):
+async def insert_into_schema_holder(schema_file, schema_type, schema_name):
     cursor, con = await get_connection()
     try:
         new_db_name = str(uuid4())
-        query = f""" INSERT INTO schema_holder (schema_id, schema, schema_type) VALUES (%s, %s, %s)"""
-        cursor.execute(query, (new_db_name, schema_file, schema_type))
+        query = f""" INSERT INTO schema_holder (schema_id, schema, schema_type, schema_name) VALUES (%s, %s, %s, %s)"""
+        cursor.execute(query, (new_db_name, schema_file, schema_type, schema_name))
         print(f"{new_db_name}: inserted successfully")
         return new_db_name, ""
     except Exception as e:

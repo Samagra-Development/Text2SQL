@@ -17,38 +17,20 @@ import './index.css'
 
 const databases = {
   "default": {
-    "schemas": ["esamwad"],
-    "details": {
-      "esamwad": {
-        "schemaId": "",
-        "sql": "./samples/esamwad.sql",
-        "samplePrompts": ["Get me the top 10 students"]
-      }
-    }
+    "schemas":[],
+    "details": {}
   },
   "mssql": {
     "schemas": [],
     "details": {}
   },
-  // "mysql": {
-  //   "schemas": ["alimento"],
-  //   "details": {
-  //     "alimento": {
-  //       "schemaId": "",
-  //       "sql": "src/samples/alimento.sql",
-  //       "samplePrompts": ["Get me all the customers", "Get me all the orders made for restaurant name Dominos"]
-  //     }
-  //   }
-  // },
+  "mysql": {
+    "schemas": [],
+    "details": {}
+  },
   "postgresql": {
-    "schemas": ["esamwad"],
-    "details": {
-      "esamwad": {
-        "schemaId": "",
-        "sql": "./samples/esamwad.sql",
-        "samplePrompts": ["Number of students in grade 8 from District KINNAUR", "Get all students in grade 8 from District KINNAUR with their school name and father name"]
-      }
-    }
+    "schemas": [],
+    "details": {}
   }
 }
 

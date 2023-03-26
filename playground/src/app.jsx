@@ -4,6 +4,10 @@ import 'react-app-polyfill/ie11';
 import { shouldRender } from '@rjsf/utils';
 import ClipLoader from "react-spinners/ClipLoader";
 import DataTable from "./DataTable";
+import { Button, Modal, Box, Typography, TextField, FormControl, InputLabel, Select, MenuItem } from '@material-ui/core';
+import Alert from '@mui/material/Alert';
+import Backdrop from '@mui/material/Backdrop';
+import Fade from '@mui/material/Fade';
 
 const monacoEditorOptions = {
   minimap: {
@@ -11,6 +15,173 @@ const monacoEditorOptions = {
   },
   automaticLayout: true,
 };
+
+class OnboardSchema extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {open: this.props.open, handleClose: this.props.handleClose, loading: false, message: null, formData: { file: '', email: '', schemaType: '', schemaName: '' }}
+  }
+
+  handleSchemaTypeChange = (event) => {
+    this.setState({formData: { ...this.state.formData, schemaType: event.target.value}})
+  };
+
+  handleFileChange = (event) => {
+    this.setState({formData: { ...this.state.formData, file: event.target.files[0] }})
+  };
+
+  handleEmailChange = (event) => {
+    this.setState({formData: { ...this.state.formData, email: event.target.value }})
+  };
+
+  handleSchemaNameChange = (event) => {
+    this.setState({formData: { ...this.state.formData, schemaName: event.target.value }})
+  }
+
+  startLoading = () => {
+    this.setState({ loading: true })
+  }
+
+  endLoading = () => {
+    this.setState({ loading: false })
+  }
+
+  handleClose = () => {
+    this.setState({ message: null })
+    this.props.handleClose()
+  }
+
+  handleSubmit = (event) => {
+    event.preventDefault();
+    this.startLoading()
+    console.log(this.state.formData);
+    // Call API or perform other actions here with form data and schema type
+
+    // do something with the SQL blob data
+    const formData = new FormData();
+    formData.append('schema', this.state.formData.file, "alimento.sql");
+    formData.append('schema_type', this.state.formData.schemaType);
+    formData.append('schema_name', this.state.formData.schemaName);
+
+    const options = {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Authorization': 'Basic ' + btoa('test:test'),
+      }
+    };
+
+    fetch('http://localhost:5078/onboard', options)
+      .then(response => response.json())
+      .then(data => {
+        console.log("data value", data);
+        const message = Object.keys(data.error).length === 0 ? 'Schema onboarded successfully' : 'Error onboarding schema';
+        this.endLoading()
+        this.setState({open: this.props.open, handleClose: this.props.handleClose, message: message, formData: { file: null, email: '', schemaType: '', schemaName: '' }})
+        // this.state.handleClose();
+        this.props.updateDatabase()
+      })
+      .catch(error => console.error(error));
+  };
+  render() {
+    const style = {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: 400,
+      bgcolor: 'background.paper',
+      border: '2px solid #000',
+      boxShadow: 24,
+      p: 4,
+    };
+    return (
+      <Modal
+        aria-labelledby="transition-modal-title"
+        onClose = {this.handleClose}
+        aria-describedby="transition-modal-description"
+        open={this.props.open}
+        closeAfterTransition
+        slots={{ backdrop: Backdrop }}
+        slotProps={{
+          backdrop: {
+            timeout: 500,
+          },
+        }}
+      >
+        <Fade in={this.props.open}>
+        <Box sx={style}>
+          <Typography id="modal-modal-title" variant="h6" component="h2" align='center' sx={{fontWeight:'bold'}}>
+            Onboard a Schema
+          </Typography>
+          {this.state.loading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <ClipLoader
+                  loading={this.state.loading}
+                  size={80}
+                  aria-label="Loading Spinner"
+                  data-testid="loader"
+                />
+              </div> )
+              :
+              (
+                this.state.message ? (
+                  <Alert severity={this.state.message.includes('Error') ? 'error' : 'success'} sx={{ mt: 2 }}>
+                    {this.state.message}
+                  </Alert>
+                ) :            
+              <form onSubmit={this.handleSubmit}>
+                <TextField
+                  id="schemaName"
+                  label="Schema Name"
+                  type="text"
+                  value={this.state.formData.schemaName}
+                  onChange={this.handleSchemaNameChange}
+                  fullWidth
+                  sx={{ mt: 2 }}
+                />
+                <TextField
+                  id="file"
+                  label="File"
+                  type="file"
+                  inputProps={{accepts: '.sql', onChange: this.handleFileChange}}
+                  fullWidth
+                  sx={{ mt: 2 }}
+                />
+                <TextField
+                  id="email"
+                  label="Email"
+                  type="email"
+                  value={this.state.formData.email}
+                  onChange={this.handleEmailChange}
+                  fullWidth
+                  sx={{ mt: 2 }}
+                />
+                <FormControl fullWidth sx={{ mt: 2 }}>
+                  <InputLabel id="schema-type-label">Schema Type</InputLabel>
+                  <Select
+                    labelId="schema-type-label"
+                    id="schema-type"
+                    value={this.state.schemaType}
+                    label="Schema Type"
+                    onChange={this.handleSchemaTypeChange}
+                  >
+                    <MenuItem value={'mysql'}>MS SQL</MenuItem>
+                    <MenuItem value={'postgresql'}>PostgreSQL</MenuItem>
+                  </Select>
+                </FormControl>
+                <Button type="submit" variant="contained" sx={{ mt: 2 }}>
+                  Submit
+                </Button>
+              </form>
+              )
+          }
+          </Box>
+        </Fade>
+      </Modal>
+    )
+  }
+}
 
 class ChatGPTResponse extends Component {
   constructor(props) {
@@ -210,25 +381,19 @@ const Search = ({ schemaId, prompts, handleSearch, startLoading }) => {
 class DbSelector extends Component {
   constructor(props) {
     super(props);
-    this.state = { current: '', databases: this.props.databases, allschemas: [], schemaId: '', schema: '', query: '', query_data: '', prompts: [], loading: false };
+    this.state = { current: '', databases: this.props.databases, allschemas: [], schemaId: '', schema: '', query: '', query_data: '', prompts: [], loading: false, open: false };
   }
 
   handleChange = (event) => {
     const allschemas = this.props.databases[event.target.value]["schemas"]
+    console.log(allschemas)
     this.setState({ allschemas: allschemas, current: event.target.value })
   }
 
   handleSchemaChange = (schemVal) => {
     const schemaId = this.props.databases[this.state.current]["details"][schemVal]["schemaId"]
     const prompts = this.props.databases[this.state.current]["details"][schemVal]["samplePrompts"]
-    let sqlfile = ''
-    fetch('/' + this.state.databases[this.state.current]["details"][schemVal]["sql"])
-      .then(response => response.text())
-      .then(data => {
-        sqlfile = data // do something with the SQL string
-        console.log(sqlfile);
-        this.setState({ schemaId: schemaId, schema: sqlfile, prompts: prompts })
-      });
+    this.setState({ schemaId: schemaId, prompts: prompts })
   }
 
   handleSearch = (apiresponse) => {
@@ -244,6 +409,15 @@ class DbSelector extends Component {
 
   onSchemaEdited = (schema) => this.setState({ schema, shareURL: null });
 
+  handleOpen = () => {
+    this.setState({ open: true })
+    console.log(this.state)
+  }
+
+  handleClose = () => {
+    this.setState({ open: false })
+  }
+
   render() {
     let databaseTypes = Object.keys(this.state.databases)
     databaseTypes = databaseTypes.filter(element => element != 'default')
@@ -252,9 +426,17 @@ class DbSelector extends Component {
     return (
       <div className='container mx-auto px-4'>
         <div className='page-header'>
-          <h1 className="text-3xl font-bold mb-8">
-            Natural Language Data Query
-          </h1>
+          <div style={{display: 'flex', justifyContent: 'space-between'}}>
+            <div>
+              <h1 className="text-3xl font-bold mb-8">
+                Natural Language Data Query
+              </h1>
+            </div>
+            <div>
+              <Button onClick={this.handleOpen} color='primary' variant= 'contained'>Onboard a Schema</Button>
+              <OnboardSchema open={this.state.open} handleClose={this.handleClose} updateDatabase={this.props.updateDatabase}/>
+            </div>
+          </div>
           <div className='flex flex-col sm:flex-row sm:space-x-6 items-center'>
             <div className='w-full sm:w-1/2'>
               <form className="form_rjsf_themeSelector">
@@ -327,54 +509,122 @@ class Playground extends Component {
   }
 
   componentWillMount() {
-    var databases = this.state.databases
-    var dbTypes = Object.keys(databases)
+    const hasura_secret = '4GeEB2JCU5rBdLvQ4AbeqqrPGu7kk9SZDhJUZm7A'
+    var myHeaders = new Headers();
+    myHeaders.append("x-hasura-admin-secret", hasura_secret);
 
-    dbTypes.forEach((dbType, index) => {
-      var schemas = databases[dbType]["schemas"]
-      schemas.forEach((schema, index) => {
-        var filePath = databases[dbType]["details"][schema]["sql"];
-        // create a new XMLHttpRequest object
-        var xhr = new XMLHttpRequest();
+    var requestOptions = {
+      method: 'GET',
+      headers: myHeaders,
+      redirect: 'follow'
+    };
+    fetch('http://localhost:8084/api/rest/schemas', requestOptions)
+    .then(response => response.json())
+    .then(response => {
+      const transformedArray = {
+        "default": {
+          "schemas": [],
+          "details": {}
+        },
+        "mssql": {
+          "schemas": [],
+          "details": {}
+        },
+        "mysql": {
+          "schemas": [],
+          "details": {}
+        },
+        "postgresql": {
+          "schemas": [],
+          "details": {}
+        }
+      };
 
-        // define the function to be executed when the file has been loaded
-        xhr.onload = function (event) {
-          // get the SQL file data as a blob
-          var sqlBlob = new Blob([xhr.response], { type: 'application/sql' });
+      console.log("response value = ", response);
+      response.schema_holder.forEach(obj => {
+        const schemaType = obj.schema_type;
+        const schemaId = obj.schema_id;
+        const schemaName = obj.schema_name || 'default';
+        const samplePrompts = [...new Set(obj.prompts.map(p => p.prompt.toLowerCase()))];
 
-          // do something with the SQL blob data
-          const formData = new FormData();
-          formData.append('schema', sqlBlob, "alimento.sql");
-          formData.append('schema_type', dbType);
-
-          const options = {
-            method: 'POST',
-            body: formData,
-            headers: {
-              'Authorization': 'Basic ' + btoa('test:test'),
-            }
+        if (!transformedArray[schemaType].schemas.includes(schemaName)) {
+          transformedArray[schemaType].schemas.push(schemaName);
+        }
+        
+        if (!transformedArray[schemaType].details[schemaName]) {
+          transformedArray[schemaType].details[schemaName] = {
+            schemaId: schemaId,
+            samplePrompts: []
           };
+        }
 
-          fetch('https://api.t2s.samagra.io/onboard', options)
-            .then(response => response.json())
-            .then(data => { databases[dbType]["details"][schema]["schemaId"] = data["result"]["data"]["schema_id"] })
-            .catch(error => console.error(error));
-        };
+        transformedArray[schemaType].details[schemaName].samplePrompts = samplePrompts
 
-        // open the file using the GET method
-        xhr.open('GET', filePath);
-
-        // set the response type to 'blob'
-        xhr.responseType = 'blob';
-
-        // send the request
-        xhr.send();
-      })
+      });
+      console.log("transformedArray", transformedArray)
+      this.setState({ databases: transformedArray })
     })
-    console.log(databases)
-    this.setState({ databases: databases })
+    .catch(error => console.error(error))
   }
 
+  updateDatabase = () => {
+    const hasura_secret = '4GeEB2JCU5rBdLvQ4AbeqqrPGu7kk9SZDhJUZm7A'
+    var myHeaders = new Headers();
+    myHeaders.append("x-hasura-admin-secret", hasura_secret);
+
+    var requestOptions = {
+      method: 'GET',
+      headers: myHeaders,
+      redirect: 'follow'
+    };
+    fetch('http://localhost:8084/api/rest/schemas', requestOptions)
+    .then(response => response.json())
+    .then(response => {
+      const transformedArray = {
+        "default": {
+          "schemas": [],
+          "details": {}
+        },
+        "mssql": {
+          "schemas": [],
+          "details": {}
+        },
+        "mysql": {
+          "schemas": [],
+          "details": {}
+        },
+        "postgresql": {
+          "schemas": [],
+          "details": {}
+        }
+      };
+
+      console.log("response value = ", response);
+      response.schema_holder.forEach(obj => {
+        const schemaType = obj.schema_type;
+        const schemaId = obj.schema_id;
+        const schemaName = obj.schema_name || 'default';
+        const samplePrompts = [...new Set(obj.prompts.map(p => p.prompt.toLowerCase()))];
+
+        if (!transformedArray[schemaType].schemas.includes(schemaName)) {
+          transformedArray[schemaType].schemas.push(schemaName);
+        }
+        
+        if (!transformedArray[schemaType].details[schemaName]) {
+          transformedArray[schemaType].details[schemaName] = {
+            schemaId: schemaId,
+            samplePrompts: []
+          };
+        }
+
+        transformedArray[schemaType].details[schemaName].samplePrompts = samplePrompts
+
+      });
+      console.log("transformedArray", transformedArray)
+      this.setState({ databases: transformedArray })
+    })
+    .catch(error => console.error(error))
+  }
 
   shouldComponentUpdate(nextProps, nextState) {
     return shouldRender(this, nextProps, nextState);
@@ -386,7 +636,7 @@ class Playground extends Component {
     } = this.state;
 
     return (
-      <DbSelector databases={databases} />
+      <DbSelector databases={databases} updateDatabase = {this.updateDatabase}/>
     );
   }
 }

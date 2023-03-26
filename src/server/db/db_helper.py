@@ -113,6 +113,9 @@ class mysql_database(Database):
                         cursor.execute(command)
                     except mysql.connector.Error as err:
                         print(f"Error creating schema in database {db_name}: {err}")
+                        cursor.close()
+                        con.close()
+                        return False, str(e)
             cursor.close()
             con.close()
             return True, ""
@@ -244,8 +247,8 @@ class postgresql_database(Database):
         try:
             con = psycopg2.connect(
                 database="postgres",
-                user=os.getenv('POSTGRES_CLIENT_USER'),
-                password=os.getenv('POSTGRES_CLIENT_PASSWORD'),
+                user=os.getenv('POSTGRES_USER'),
+                password=os.getenv('POSTGRES_PASSWORD'),
                 port=os.getenv('POSTGRES_PORT'),
                 host=os.getenv('POSTGRES_HOST'),
             )
@@ -264,8 +267,8 @@ class postgresql_database(Database):
         try:
             con = psycopg2.connect(
                 database=db_name,
-                user=os.getenv('POSTGRES_CLIENT_USER'),
-                password=os.getenv('POSTGRES_CLIENT_PASSWORD'),
+                user=os.getenv('POSTGRES_USER'),
+                password=os.getenv('POSTGRES_PASSWORD'),
                 port=os.getenv('POSTGRES_PORT'),
                 host=os.getenv('POSTGRES_HOST'),
             )
@@ -323,8 +326,8 @@ class postgresql_database(Database):
         try:
             con = psycopg2.connect(
                 database=schema_id,
-                user=os.getenv('POSTGRES_CLIENT_USER'),
-                password=os.getenv('POSTGRES_CLIENT_PASSWORD'),
+                user=os.getenv('POSTGRES_USER'),
+                password=os.getenv('POSTGRES_PASSWORD'),
                 port=os.getenv('POSTGRES_PORT'),
                 host=os.getenv('POSTGRES_HOST'),
             )
@@ -346,8 +349,8 @@ class postgresql_database(Database):
         try:
             con = psycopg2.connect(
                 database=db_name,
-                user=os.getenv('POSTGRES_CLIENT_USER'),
-                password=os.getenv('POSTGRES_CLIENT_PASSWORD'),
+                user=os.getenv('POSTGRES_USER'),
+                password=os.getenv('POSTGRES_PASSWORD'),
                 port=os.getenv('POSTGRES_PORT'),
                 host=os.getenv('POSTGRES_HOST'),
             )
