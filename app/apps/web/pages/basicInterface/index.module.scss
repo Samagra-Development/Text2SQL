@@ -1,0 +1,196 @@
+@import url('https://fonts.googleapis.com/css2?family=Tomorrow&display=swap');
+
+.container {
+    font-family: 'Tomorrow';
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+
+    .leftContainer {
+        width: 30%;
+        display: flex;
+        flex-direction: column;
+        padding: 2rem 3rem;
+        gap: 3rem;
+
+        .goback {
+            font-weight: bolder;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 1rem 0rem;
+            margin-bottom: -1rem;
+            transition: all 0.2s ease-in;
+
+            &:hover {
+                color: #04abff;
+            }
+        }
+
+        .reqCont {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            transition: all 0.3s ease-in;
+
+            .title {
+                font-size: 2rem;
+            }
+
+            select {
+                width: 95%;
+                padding: 1rem;
+                border-radius: 0.5rem;
+            }
+
+            input {
+                width: 87%;
+                padding: 1rem;
+                border-radius: 0.5rem;
+                border: 1px solid #2b2b2b;
+            }
+        }
+
+        .orSeparator {
+            margin: -0.5rem 0rem;
+            display: flex;
+            font-size: 0.8rem;
+            width: 40%;
+            margin-left: 4rem;
+            flex-direction: row;
+            align-items: center;
+
+            p {
+                margin: 0rem 1rem;
+            }
+
+            .separator {
+                height: 1px;
+                width: 100%;
+                background: #2b2b2b;
+                opacity: 0.7;
+            }
+        }
+
+        .searchBtn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            width: 95%;
+            height: 4rem;
+            background: #04abff;
+            transition: all 0.3s ease-in;
+            color: #fff;
+            border-radius: 0.5rem;
+            cursor: pointer;
+
+            &:hover {
+                transform: translateY(-1px);
+                box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;
+            }
+        }
+    }
+
+    .disabled {
+        opacity: 0.4;
+    }
+
+    .rightContainer {
+        display: flex;
+        flex-direction: column;
+        margin-right: 1rem;
+        border-radius: 5px;
+        width: 70%;
+        height: 91vh;
+        box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
+        padding: 2rem;
+
+        .blueLine {
+            margin-top: -1rem;
+            margin-bottom: 1rem;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, #0e1525, transparent);
+        }
+
+        .queryHeader {
+            & p {
+                font-weight: bold;
+                font-size: 1.5rem;
+            }
+
+            & textarea {
+                width: 65vw;
+                height: 5rem;
+                background: #0e1525;
+                color: #fff;
+                padding: 0.5rem;
+            }
+        }
+
+        .queryResult {
+            display: flex;
+            width: 66vw;
+            height: 65vh;
+        }
+    }
+
+    .modalContent {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        // padding: 2rem;
+        flex-direction: column;
+
+        & p:nth-child(1) {
+            margin: 0rem auto;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .modalQuestion {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+            margin-left: 4rem;
+
+            &>p {
+                margin: 0;
+                font-size: 1rem;
+                margin-bottom: 0.5rem;
+            }
+
+            & input {
+                width: 80%;
+                padding: 0.5rem;
+            }
+
+            & select {
+                width: 84%;
+                padding: 0.5rem;
+            }
+        }
+
+        .submitBtn {
+            background: #04abff;
+            width: 9rem;
+            color: #fff;
+            text-align: center;
+            padding: 0.5rem;
+            margin: auto;
+            margin-top: 0rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in;
+
+            &:hover {
+                transform: translateY(-1px);
+                box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;
+            }
+        }
+    }
+}
