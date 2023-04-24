@@ -19,23 +19,23 @@ const monacoEditorOptions = {
 class OnboardSchema extends Component {
   constructor(props) {
     super(props)
-    this.state = {open: this.props.open, handleClose: this.props.handleClose, loading: false, message: null, formData: { file: '', email: '', schemaType: '', schemaName: '' }}
+    this.state = { open: this.props.open, handleClose: this.props.handleClose, loading: false, message: null, formData: { file: '', email: '', schemaType: '', schemaName: '' } }
   }
 
   handleSchemaTypeChange = (event) => {
-    this.setState({formData: { ...this.state.formData, schemaType: event.target.value}})
+    this.setState({ formData: { ...this.state.formData, schemaType: event.target.value } })
   };
 
   handleFileChange = (event) => {
-    this.setState({formData: { ...this.state.formData, file: event.target.files[0] }})
+    this.setState({ formData: { ...this.state.formData, file: event.target.files[0] } })
   };
 
   handleEmailChange = (event) => {
-    this.setState({formData: { ...this.state.formData, email: event.target.value }})
+    this.setState({ formData: { ...this.state.formData, email: event.target.value } })
   };
 
   handleSchemaNameChange = (event) => {
-    this.setState({formData: { ...this.state.formData, schemaName: event.target.value }})
+    this.setState({ formData: { ...this.state.formData, schemaName: event.target.value } })
   }
 
   startLoading = () => {
@@ -77,7 +77,7 @@ class OnboardSchema extends Component {
         console.log("data value", data);
         const message = Object.keys(data.error).length === 0 ? 'Schema onboarded successfully' : 'Error onboarding schema';
         this.endLoading()
-        this.setState({open: this.props.open, handleClose: this.props.handleClose, message: message, formData: { file: null, email: '', schemaType: '', schemaName: '' }})
+        this.setState({ open: this.props.open, handleClose: this.props.handleClose, message: message, formData: { file: null, email: '', schemaType: '', schemaName: '' } })
         // this.state.handleClose();
         this.props.updateDatabase()
       })
@@ -98,7 +98,7 @@ class OnboardSchema extends Component {
     return (
       <Modal
         aria-labelledby="transition-modal-title"
-        onClose = {this.handleClose}
+        onClose={this.handleClose}
         aria-describedby="transition-modal-description"
         open={this.props.open}
         closeAfterTransition
@@ -110,11 +110,11 @@ class OnboardSchema extends Component {
         }}
       >
         <Fade in={this.props.open}>
-        <Box sx={style}>
-          <Typography id="modal-modal-title" variant="h6" component="h2" align='center' sx={{fontWeight:'bold'}}>
-            Onboard a Schema
-          </Typography>
-          {this.state.loading ? (
+          <Box sx={style}>
+            <Typography id="modal-modal-title" variant="h6" component="h2" align='center' sx={{ fontWeight: 'bold' }}>
+              Onboard a Schema
+            </Typography>
+            {this.state.loading ? (
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <ClipLoader
                   loading={this.state.loading}
@@ -122,60 +122,60 @@ class OnboardSchema extends Component {
                   aria-label="Loading Spinner"
                   data-testid="loader"
                 />
-              </div> )
+              </div>)
               :
               (
                 this.state.message ? (
                   <Alert severity={this.state.message.includes('Error') ? 'error' : 'success'} sx={{ mt: 2 }}>
                     {this.state.message}
                   </Alert>
-                ) :            
-              <form onSubmit={this.handleSubmit}>
-                <TextField
-                  id="schemaName"
-                  label="Schema Name"
-                  type="text"
-                  value={this.state.formData.schemaName}
-                  onChange={this.handleSchemaNameChange}
-                  fullWidth
-                  sx={{ mt: 2 }}
-                />
-                <TextField
-                  id="file"
-                  label="File"
-                  type="file"
-                  inputProps={{accepts: '.sql', onChange: this.handleFileChange}}
-                  fullWidth
-                  sx={{ mt: 2 }}
-                />
-                <TextField
-                  id="email"
-                  label="Email"
-                  type="email"
-                  value={this.state.formData.email}
-                  onChange={this.handleEmailChange}
-                  fullWidth
-                  sx={{ mt: 2 }}
-                />
-                <FormControl fullWidth sx={{ mt: 2 }}>
-                  <InputLabel id="schema-type-label">Schema Type</InputLabel>
-                  <Select
-                    labelId="schema-type-label"
-                    id="schema-type"
-                    value={this.state.schemaType}
-                    label="Schema Type"
-                    onChange={this.handleSchemaTypeChange}
-                  >
-                    <MenuItem value={'mysql'}>MS SQL</MenuItem>
-                    <MenuItem value={'postgresql'}>PostgreSQL</MenuItem>
-                  </Select>
-                </FormControl>
-                <Button type="submit" variant="contained" sx={{ mt: 2 }}>
-                  Submit
-                </Button>
-              </form>
+                ) :
+                  <form onSubmit={this.handleSubmit}>
+                    <TextField
+                      id="schemaName"
+                      label="Schema Name"
+                      type="text"
+                      value={this.state.formData.schemaName}
+                      onChange={this.handleSchemaNameChange}
+                      fullWidth
+                      sx={{ mt: 2 }}
+                    />
+                    <TextField
+                      id="file"
+                      label="File"
+                      type="file"
+                      inputProps={{ accepts: '.sql', onChange: this.handleFileChange }}
+                      fullWidth
+                      sx={{ mt: 2 }}
+                    />
+                    <TextField
+                      id="email"
+                      label="Email"
+                      type="email"
+                      value={this.state.formData.email}
+                      onChange={this.handleEmailChange}
+                      fullWidth
+                      sx={{ mt: 2 }}
+                    />
+                    <FormControl fullWidth sx={{ mt: 2 }}>
+                      <InputLabel id="schema-type-label">Schema Type</InputLabel>
+                      <Select
+                        labelId="schema-type-label"
+                        id="schema-type"
+                        value={this.state.schemaType}
+                        label="Schema Type"
+                        onChange={this.handleSchemaTypeChange}
+                      >
+                        <MenuItem value={'mysql'}>MS SQL</MenuItem>
+                        <MenuItem value={'postgresql'}>PostgreSQL</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <Button type="submit" variant="contained" sx={{ mt: 2 }}>
+                      Submit
+                    </Button>
+                  </form>
               )
-          }
+            }
           </Box>
         </Fade>
       </Modal>
@@ -426,15 +426,15 @@ class DbSelector extends Component {
     return (
       <div className='container mx-auto px-4'>
         <div className='page-header'>
-          <div style={{display: 'flex', justifyContent: 'space-between'}}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div>
               <h1 className="text-3xl font-bold mb-8">
                 Natural Language Data Query
               </h1>
             </div>
             <div>
-              <Button onClick={this.handleOpen} color='primary' variant= 'contained'>Onboard a Schema</Button>
-              <OnboardSchema open={this.state.open} handleClose={this.handleClose} updateDatabase={this.props.updateDatabase}/>
+              <Button onClick={this.handleOpen} color='primary' variant='contained'>Onboard a Schema</Button>
+              <OnboardSchema open={this.state.open} handleClose={this.handleClose} updateDatabase={this.props.updateDatabase} />
             </div>
           </div>
           <div className='flex flex-col sm:flex-row sm:space-x-6 items-center'>
@@ -519,52 +519,52 @@ class Playground extends Component {
       redirect: 'follow'
     };
     fetch('http://localhost:8084/api/rest/schemas', requestOptions)
-    .then(response => response.json())
-    .then(response => {
-      const transformedArray = {
-        "default": {
-          "schemas": [],
-          "details": {}
-        },
-        "mssql": {
-          "schemas": [],
-          "details": {}
-        },
-        "mysql": {
-          "schemas": [],
-          "details": {}
-        },
-        "postgresql": {
-          "schemas": [],
-          "details": {}
-        }
-      };
+      .then(response => response.json())
+      .then(response => {
+        const transformedArray = {
+          "default": {
+            "schemas": [],
+            "details": {}
+          },
+          "mssql": {
+            "schemas": [],
+            "details": {}
+          },
+          "mysql": {
+            "schemas": [],
+            "details": {}
+          },
+          "postgresql": {
+            "schemas": [],
+            "details": {}
+          }
+        };
 
-      console.log("response value = ", response);
-      response.schema_holder.forEach(obj => {
-        const schemaType = obj.schema_type;
-        const schemaId = obj.schema_id;
-        const schemaName = obj.schema_name || 'default';
-        const samplePrompts = [...new Set(obj.prompts.map(p => p.prompt.toLowerCase()))];
+        console.log("response value = ", response);
+        response.schema_holder.forEach(obj => {
+          const schemaType = obj.schema_type;
+          const schemaId = obj.schema_id;
+          const schemaName = obj.schema_name || 'default';
+          const samplePrompts = [...new Set(obj.prompts.map(p => p.prompt.toLowerCase()))];
 
-        if (!transformedArray[schemaType].schemas.includes(schemaName)) {
-          transformedArray[schemaType].schemas.push(schemaName);
-        }
-        
-        if (!transformedArray[schemaType].details[schemaName]) {
-          transformedArray[schemaType].details[schemaName] = {
-            schemaId: schemaId,
-            samplePrompts: []
-          };
-        }
+          if (!transformedArray[schemaType].schemas.includes(schemaName)) {
+            transformedArray[schemaType].schemas.push(schemaName);
+          }
 
-        transformedArray[schemaType].details[schemaName].samplePrompts = samplePrompts
+          if (!transformedArray[schemaType].details[schemaName]) {
+            transformedArray[schemaType].details[schemaName] = {
+              schemaId: schemaId,
+              samplePrompts: []
+            };
+          }
 
-      });
-      console.log("transformedArray", transformedArray)
-      this.setState({ databases: transformedArray })
-    })
-    .catch(error => console.error(error))
+          transformedArray[schemaType].details[schemaName].samplePrompts = samplePrompts
+
+        });
+        console.log("transformedArray", transformedArray)
+        this.setState({ databases: transformedArray })
+      })
+      .catch(error => console.error(error))
   }
 
   updateDatabase = () => {
@@ -578,52 +578,52 @@ class Playground extends Component {
       redirect: 'follow'
     };
     fetch('http://localhost:8084/api/rest/schemas', requestOptions)
-    .then(response => response.json())
-    .then(response => {
-      const transformedArray = {
-        "default": {
-          "schemas": [],
-          "details": {}
-        },
-        "mssql": {
-          "schemas": [],
-          "details": {}
-        },
-        "mysql": {
-          "schemas": [],
-          "details": {}
-        },
-        "postgresql": {
-          "schemas": [],
-          "details": {}
-        }
-      };
+      .then(response => response.json())
+      .then(response => {
+        const transformedArray = {
+          "default": {
+            "schemas": [],
+            "details": {}
+          },
+          "mssql": {
+            "schemas": [],
+            "details": {}
+          },
+          "mysql": {
+            "schemas": [],
+            "details": {}
+          },
+          "postgresql": {
+            "schemas": [],
+            "details": {}
+          }
+        };
 
-      console.log("response value = ", response);
-      response.schema_holder.forEach(obj => {
-        const schemaType = obj.schema_type;
-        const schemaId = obj.schema_id;
-        const schemaName = obj.schema_name || 'default';
-        const samplePrompts = [...new Set(obj.prompts.map(p => p.prompt.toLowerCase()))];
+        console.log("response value = ", response);
+        response.schema_holder.forEach(obj => {
+          const schemaType = obj.schema_type;
+          const schemaId = obj.schema_id;
+          const schemaName = obj.schema_name || 'default';
+          const samplePrompts = [...new Set(obj.prompts.map(p => p.prompt.toLowerCase()))];
 
-        if (!transformedArray[schemaType].schemas.includes(schemaName)) {
-          transformedArray[schemaType].schemas.push(schemaName);
-        }
-        
-        if (!transformedArray[schemaType].details[schemaName]) {
-          transformedArray[schemaType].details[schemaName] = {
-            schemaId: schemaId,
-            samplePrompts: []
-          };
-        }
+          if (!transformedArray[schemaType].schemas.includes(schemaName)) {
+            transformedArray[schemaType].schemas.push(schemaName);
+          }
 
-        transformedArray[schemaType].details[schemaName].samplePrompts = samplePrompts
+          if (!transformedArray[schemaType].details[schemaName]) {
+            transformedArray[schemaType].details[schemaName] = {
+              schemaId: schemaId,
+              samplePrompts: []
+            };
+          }
 
-      });
-      console.log("transformedArray", transformedArray)
-      this.setState({ databases: transformedArray })
-    })
-    .catch(error => console.error(error))
+          transformedArray[schemaType].details[schemaName].samplePrompts = samplePrompts
+
+        });
+        console.log("transformedArray", transformedArray)
+        this.setState({ databases: transformedArray })
+      })
+      .catch(error => console.error(error))
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -636,7 +636,7 @@ class Playground extends Component {
     } = this.state;
 
     return (
-      <DbSelector databases={databases} updateDatabase = {this.updateDatabase}/>
+      <DbSelector databases={databases} updateDatabase={this.updateDatabase} />
     );
   }
 }

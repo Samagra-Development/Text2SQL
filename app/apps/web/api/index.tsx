@@ -41,3 +41,28 @@ export const getPromptResponse = async (prompt, schemaId) => {
         return err;
     }
 }
+
+export const onboardSchema = async (schema, schemaType, schemaName) => {
+    try {
+        let formData = new FormData();
+        formData.append('schema', schema, "alimento.sql");
+        formData.append('schema_type', schemaType);
+        formData.append('schema_name', schemaName);
+
+
+        const res = await axios.post('https://api.t2s.samagra.io/onboard',
+            {
+                formData: formData
+            },
+            {
+                headers: {
+                    'Authorization': 'Basic ' + btoa(`test:test`),
+                },
+            }
+        )
+        return res.data;
+    } catch (err) {
+        console.log(err);
+        return err;
+    }
+}

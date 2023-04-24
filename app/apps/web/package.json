@@ -15,6 +15,7 @@
     "framer-motion": "^10.12.4",
     "next": "latest",
     "react": "^18.2.0",
+    "react-csv": "^2.2.2",
     "react-dom": "^18.2.0",
     "react-lottie": "^1.2.3",
     "sass": "^1.62.0",

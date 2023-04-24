@@ -1,12 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Tomorrow&display=swap');
 
+@mixin on-mobile {
+    @media (max-width: 769px) {
+        @content
+    }
+}
+
+
 .container {
     font-family: 'Tomorrow';
     display: flex;
     flex-direction: row;
     width: 100vw;
     height: 100vh;
-    overflow: hidden;
+    // overflow: hidden;
+
+    @include on-mobile() {
+        flex-direction: column;
+    }
 
     .leftContainer {
         width: 30%;
@@ -14,6 +25,12 @@
         flex-direction: column;
         padding: 2rem 3rem;
         gap: 3rem;
+
+        @include on-mobile() {
+            width: 100%;
+            padding: 1rem;
+            gap: 1.5rem;
+        }
 
         .goback {
             font-weight: bolder;
@@ -26,6 +43,11 @@
             &:hover {
                 color: #04abff;
             }
+
+            @include on-mobile() {
+                font-size: 1rem;
+            }
+
         }
 
         .reqCont {
@@ -34,14 +56,23 @@
             gap: 1rem;
             transition: all 0.3s ease-in;
 
+
             .title {
                 font-size: 2rem;
+
+                @include on-mobile() {
+                    font-size: 1.2rem;
+                }
             }
 
             select {
                 width: 95%;
                 padding: 1rem;
                 border-radius: 0.5rem;
+
+                @include on-mobile() {
+                    width: 99%;
+                }
             }
 
             input {
@@ -49,6 +80,10 @@
                 padding: 1rem;
                 border-radius: 0.5rem;
                 border: 1px solid #2b2b2b;
+
+                @include on-mobile() {
+                    width: 91%;
+                }
             }
         }
 
@@ -60,6 +95,11 @@
             margin-left: 4rem;
             flex-direction: row;
             align-items: center;
+
+            @include on-mobile() {
+                width: 50%;
+                margin: auto;
+            }
 
             p {
                 margin: 0rem 1rem;
@@ -90,6 +130,29 @@
                 transform: translateY(-1px);
                 box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;
             }
+
+            @include on-mobile() {
+                width: 99%;
+                height: 3rem;
+            }
+        }
+
+        .resetBtn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.3rem;
+            width: 95%;
+
+            @include on-mobile() {
+                font-size: 1rem;
+                margin-top: 1rem;
+            }
+
+            &>span {
+                margin-top: -2.5rem;
+                cursor: pointer;
+            }
         }
     }
 
@@ -100,12 +163,21 @@
     .rightContainer {
         display: flex;
         flex-direction: column;
+        margin-top: 1rem;
         margin-right: 1rem;
         border-radius: 5px;
         width: 70%;
-        height: 91vh;
+        height: 89vh;
         box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
         padding: 2rem;
+
+        @include on-mobile() {
+            width: 91%;
+            height: auto;
+            margin-left: 1rem;
+            padding: 1rem;
+        }
+
 
         .blueLine {
             margin-top: -1rem;
@@ -127,6 +199,24 @@
                 background: #0e1525;
                 color: #fff;
                 padding: 0.5rem;
+
+                @include on-mobile() {
+                    width: 95%;
+                }
+            }
+
+            .exportBtn {
+                color: #0e1525;
+                border: 2px solid #0e1525;
+                padding: 0.5rem 2rem;
+                cursor: pointer;
+                transition: all 0.2s ease-in;
+
+                &:hover {
+                    background: #0e1525;
+                    color: #fff;
+                }
+
             }
         }
 
@@ -134,6 +224,11 @@
             display: flex;
             width: 66vw;
             height: 65vh;
+
+            @include on-mobile() {
+                min-height: 25vh;
+                width: 95%;
+            }
         }
     }
 

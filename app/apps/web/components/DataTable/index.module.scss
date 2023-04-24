@@ -1,0 +1,122 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow: scroll;
+
+    .tableMain {
+        border-radius: 5px;
+        font-size: 1rem;
+        font-weight: normal;
+        border: none;
+        border-collapse: collapse;
+        width: 100%;
+        max-width: 100%;
+        white-space: nowrap;
+        background-color: white;
+    }
+
+
+    .tableMain td,
+    .tableMain th {
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .tableMain td {
+        border-right: 1px solid #f8f8f8;
+        font-size: 14px;
+    }
+
+    .tableMain thead th {
+        color: #ffffff;
+        background: #0e1525
+    }
+
+
+    .tableMain tr:nth-child(even) {
+        background: #F8F8F8;
+    }
+
+    /* Responsive */
+
+    @media (max-width: 767px) {
+        .tableMain {
+            display: block;
+            width: 100%;
+        }
+
+        .table-wrapper:before {
+            content: "Scroll horizontally >";
+            display: block;
+            text-align: right;
+            font-size: 11px;
+            color: white;
+            padding: 0 0 10px;
+        }
+
+        .tableMain thead,
+        .tableMain tbody,
+        .tableMain thead th {
+            display: block;
+        }
+
+        .tableMain thead th:last-child {
+            border-bottom: none;
+        }
+
+        .tableMain thead {
+            float: left;
+        }
+
+        .tableMain tbody {
+            width: auto;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .tableMain td,
+        .tableMain th {
+            padding: 20px .625em .625em .625em;
+            height: 60px;
+            vertical-align: middle;
+            box-sizing: border-box;
+            overflow-x: hidden;
+            overflow-y: auto;
+            width: 120px;
+            font-size: 13px;
+            text-overflow: ellipsis;
+        }
+
+        .tableMain thead th {
+            text-align: left;
+            border-bottom: 1px solid #f7f7f9;
+        }
+
+        .tableMain tbody tr {
+            display: table-cell;
+        }
+
+        .tableMain tbody tr:nth-child(odd) {
+            background: none;
+        }
+
+        .tableMain tr:nth-child(even) {
+            background: transparent;
+        }
+
+        .tableMain tr td:nth-child(odd) {
+            background: #F8F8F8;
+            border-right: 1px solid #E6E4E4;
+        }
+
+        .tableMain tr td:nth-child(even) {
+            border-right: 1px solid #E6E4E4;
+        }
+
+        .tableMain tbody td {
+            display: block;
+            text-align: center;
+        }
+    }
+}
