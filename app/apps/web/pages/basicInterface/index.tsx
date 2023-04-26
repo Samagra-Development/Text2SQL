@@ -85,9 +85,12 @@ const BasicInterface = () => {
         const queryData = searchResponse?.result?.data?.query_data;
         if (queryData == undefined || queryData == null || !queryData) {
             setError('An unknown error occured. Please try again.')
+            return;
         }
-        if (typeof queryData == 'string')
+        if (typeof queryData == 'string') {
             setError(queryData)
+            return
+        }
         else {
             if (queryData.length == 0) {
                 setQueryData("No results found")

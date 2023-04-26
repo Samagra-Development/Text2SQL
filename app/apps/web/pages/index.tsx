@@ -9,8 +9,8 @@ export default function Web() {
       <div className={styles.glowBall2 + ` animate__animated animate__fadeInRight`}></div>
       <h1 className='animate__animated animate__fadeInDown'>Natural Language Data Query</h1>
       <div className={styles.btnContainer}>
-        <Link href={'/basicInterface'} className={styles.nextLinks}><div className='animate__animated animate__fadeIn'>Basic Interface</div></Link>
-        <Link href={'/chatInterface'} className={styles.nextLinks}><div className='animate__animated animate__fadeIn'>Chat Interface</div></Link>
+        <Link href={'/interface'} className={styles.nextLinks}><div className='animate__animated animate__fadeIn'>Get Started</div></Link>
+        {/* <Link href={'/chatInterface'} className={styles.nextLinks}><div className='animate__animated animate__fadeIn'>Chat Interface</div></Link> */}
       </div>
       <style>
         {`
