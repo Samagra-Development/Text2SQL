@@ -25,6 +25,11 @@
         justify-content: center;
         gap: 1rem;
 
+        @include on-mobile() {
+            width: 90%;
+            padding: 1rem;
+        }
+
         .searchBtn {
             display: flex;
             justify-content: center;
@@ -62,9 +67,7 @@
         border: 1px solid #e7e7e9;
 
         @include on-mobile() {
-            width: 91%;
-            height: auto;
-            margin-left: 1rem;
+            width: 80%;
             padding: 1rem;
         }
 
@@ -102,6 +105,11 @@
                 cursor: pointer;
                 transition: all 0.2s ease-in;
 
+                @include on-mobile() {
+                    padding: 0.3rem 1.5rem;
+                    border: none;
+                }
+
                 &:hover {
                     background: #0e1525;
                     color: #fff;
@@ -113,68 +121,11 @@
         .queryResult {
             display: flex;
             width: 100%;
-            height: 65vh;
+            height: 50vh;
 
             @include on-mobile() {
                 min-height: 25vh;
-                width: 95%;
-            }
-        }
-    }
-
-    .modalContent {
-        height: 100%;
-        width: 100%;
-        display: flex;
-        // padding: 2rem;
-        flex-direction: column;
-
-        & p:nth-child(1) {
-            margin: 0rem auto;
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 2rem;
-            margin-top: 1.5rem;
-        }
-
-        .modalQuestion {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 1rem;
-            margin-left: 4rem;
-
-            &>p {
-                margin: 0;
-                font-size: 1rem;
-                margin-bottom: 0.5rem;
-            }
-
-            & input {
-                width: 80%;
-                padding: 0.5rem;
-            }
-
-            & select {
-                width: 84%;
-                padding: 0.5rem;
-            }
-        }
-
-        .submitBtn {
-            background: #04abff;
-            width: 9rem;
-            color: #fff;
-            text-align: center;
-            padding: 0.5rem;
-            margin: auto;
-            margin-top: 0rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.2s ease-in;
-
-            &:hover {
-                transform: translateY(-1px);
-                box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;
+                width: 100%;
             }
         }
     }

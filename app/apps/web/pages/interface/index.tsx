@@ -1,13 +1,12 @@
 import styles from './index.module.scss';
 import { useEffect, useState } from 'react';
 import availableDatabase from '../../configs/default/availableDatabase.json';
-import { getPromptResponse, getSchemaFromHasura, onboardSchema } from '../../api';
+import { getPromptResponse, getSchemaFromHasura } from '../../api';
 import { transformDatabaseArray } from '../../utils';
 import 'animate.css';
 import { useRouter } from 'next/router'
 import Lottie from 'react-lottie';
 import * as loader from '../../public/lotties/loader.json';
-import CommonModal from '../../components/CommonModal';
 import DataTable from '../../components/DataTable';
 import { CSVLink } from "react-csv";
 import Autocomplete from '@mui/material/Autocomplete';
@@ -22,14 +21,12 @@ const defaultOptions = {
     }
 };
 
-const schemaMenu = [{ name: 'My SQL', value: 'mysql' }, { name: 'PostgreSQL', value: 'postgresql' }]
-
 const CommonInterface = () => {
+    let isMobile = false;
     const router = useRouter()
     const [data, setData] = useState<any>();
     const [dbTypes, setDbTypes] = useState(['Choose one of the following', ...availableDatabase]);
     const [selectedDb, setSelectedDb] = useState('');
-    const [schemaOptions, setSchemaOptions] = useState([]);
     const [schema, setSchema] = useState('')
     const [searchQuery, setSearchQuery] = useState('');
     const [prompts, setPrompts] = useState([]);
@@ -37,17 +34,7 @@ const CommonInterface = () => {
     const [query, setQuery] = useState('');
     const [queryData, setQueryData] = useState<any>('');
     const [error, setError] = useState('');
-    const [modal, setModal] = useState(false);
-    const [newSchemaName, setNewSchemaName] = useState('');
-    const [newSchemaEmail, setNewSchemaEmail] = useState('');
-    const [newSchemaType, setNewSchemaType] = useState('');
-    const [newSchemaFile, setNewSchemaFile] = useState<any>(null);
-    const [onboardingSchema, setOnboardingSchema] = useState(false);
     const [dataTable, setDataTable] = useState([]);
-    const [onboardingMsg, setOnboardingMsg] = useState<any>({});
-
-    const openModal = () => setModal(true);
-    const closeModal = () => setModal(false);
 
 
     const getSchemaData = async () => {
@@ -71,6 +58,7 @@ const CommonInterface = () => {
 
     const handleSchemaSelection = (sc, db, data) => {
         setSchema(sc)
+        console.log("d->", sc, db, data)
         setPrompts([...data?.[db]?.details?.[sc]?.samplePrompts])
 
     }
@@ -115,6 +103,8 @@ const CommonInterface = () => {
     // Fetching relevant schema data from Hasura
     useEffect(() => {
         getSchemaData();
+        if (window.innerWidth < 769)
+            isMobile = true;
     }, [])
 
 
@@ -144,7 +134,7 @@ const CommonInterface = () => {
                         />
                     )}
                 />
-                <div className={styles.searchBtn + " " + (!searchQuery ? styles.disabled : '')} onClick={handleSearch}>Perform Search</div>
+                <div className={styles.searchBtn + " " + (!searchQuery ? styles.disabled : '')} onClick={handleSearch}>{isMobile ? 'Search' : 'Perform Search'}</div>
             </div>
             {/* Container for query results and generated query */}
             <div className={styles.results + ` animate__animated animate__fadeIn`}
