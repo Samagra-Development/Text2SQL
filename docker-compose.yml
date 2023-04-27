@@ -21,6 +21,19 @@ services:
     volumes:
       - ./mysql-data:/var/lib/mysql
 
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - '8089:80'
+    depends_on:
+      - mysql
+
   hasura:
     image: hasura/graphql-engine:latest
     ports:

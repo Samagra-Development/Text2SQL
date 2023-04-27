@@ -7,12 +7,14 @@ import os
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import re
 from uuid import uuid4
+import logging
 from dotenv import load_dotenv
 
-file = Path(__file__).resolve()
-parent, ROOT_FOLDER = file.parent, file.parents[2]
-load_dotenv(dotenv_path=f"{ROOT_FOLDER}/.env")
 from testcontainers.postgres import PostgresContainer
+
+file = Path(__file__).resolve()
+parent, ROOT_FOLDER = file.parent, file.parents[3]
+load_dotenv(dotenv_path=f"{ROOT_FOLDER}/.env")
 
 class Database(abc.ABC):
     @abc.abstractclassmethod
@@ -55,7 +57,7 @@ class mysql_database(Database):
             cursor = con.cursor()
             return cursor, con
         except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
             raise Exception("Failed to connect to db")
 
     async def create_database_and_schema(self, db_name):
@@ -74,7 +76,7 @@ class mysql_database(Database):
             con.close()
             return True, ""
         except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
             return False, str(e) 
     
     async def create_schema_in_db(self, db_name, schema):
@@ -106,13 +108,13 @@ class mysql_database(Database):
                     try:
                         cursor.execute(command)
                     except mysql.connector.Error as err:
-                        print(f"Error creating schema in database {db_name}: {err}")
+                        logging.error(f"Error creating schema in database {db_name}: {err}")
                 else:
-                    print("comm", command)
+                    logging.info("comm", command)
                     try:
                         cursor.execute(command)
                     except mysql.connector.Error as err:
-                        print(f"Error creating schema in database {db_name}: {err}")
+                        logging.error(f"Error creating schema in database {db_name}: {err}")
                         cursor.close()
                         con.close()
                         return False, str(e)
@@ -120,7 +122,7 @@ class mysql_database(Database):
             con.close()
             return True, ""
         except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
             return False, str(e)
 
     async def get_tables_from_schema_id(self, schema_id):
@@ -135,7 +137,7 @@ class mysql_database(Database):
             con.autocommit = True
             cursor = con.cursor()
             # cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema='public'")
-            cursor.execute("SELECT CONCAT(table_schema, '.', table_name) AS table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('information_schema', 'mysql', 'performance_schema', 'sys');")
+            cursor.execute(f"SELECT table_name AS table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema='{schema_id}';")
             table_meta = cursor.fetchall()
             print(table_meta)
             table_list = [x[0] for x in table_meta]
@@ -143,7 +145,7 @@ class mysql_database(Database):
             con.close()
             return table_list, ""
         except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
             return None, str(e)
     
     async def get_table_info(self, db_name, table_name):
@@ -155,13 +157,13 @@ class mysql_database(Database):
                 host=os.getenv('MYSQL_HOST'),
                 database=db_name
             )
-            table_schema = table_name.split('.')[0]
-            table_second_name = table_name.split('.')[1]
+            # table_schema = table_name.split('.')[0]
+            table_second_name = table_name
             cur = con.cursor()
-            cur.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name='{table_second_name}' and table_schema = '{table_schema}';")
+            cur.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name='{table_second_name}' and table_schema = '{db_name}';")
             columns = cur.fetchall()
             cur.execute(
-                f"SELECT TABLE_NAME,COLUMN_NAME,TABLE_SCHEMA,CONSTRAINT_NAME, REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME = '{table_second_name}' and REFERENCED_TABLE_SCHEMA = '{table_schema}';")
+                f"SELECT TABLE_NAME,COLUMN_NAME,TABLE_SCHEMA,CONSTRAINT_NAME, REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME = '{table_second_name}' and REFERENCED_TABLE_SCHEMA = '{db_name}';")
             related_tables = cur.fetchall()
             table_info = {table_name: {'columns': columns, 'references': {}}}
             for row in related_tables:
@@ -180,19 +182,19 @@ class mysql_database(Database):
             con.close()
             return table_info, ""
         except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
             return None, str(e)
 
     async def get_create_table_statements(self, schema, table_name):
         table_names = [table_name]
         table_queries = set()
         # Get create table statement for the given table name
-        pattern = f'CREATE TABLE public.{table_name}.*?;'
+        pattern = f'CREATE TABLE {table_name}.*?;'
         match = re.search(pattern, schema, re.DOTALL)
         if match:
             table_queries.add(match.group())
             # Get foreign key related tables
-            pattern = f'ALTER TABLE ONLY public.{table_name}\n.*?REFERENCES public.(\w+).*?;'
+            pattern = f'ALTER TABLE ONLY {table_name}\n.*?REFERENCES (\w+).*?;'
             fk_matches = re.findall(pattern, schema)
             for fk_match in fk_matches:
                 if fk_match not in table_names:
@@ -201,7 +203,7 @@ class mysql_database(Database):
             return None
         # Get create table statements for foreign key related tables
         for table_name in table_names:
-            pattern = f'CREATE TABLE public.{table_name}.*?;'
+            pattern = f'CREATE TABLE {table_name}.*?;'
             match = re.search(pattern, schema, re.DOTALL)
             if match:
                 table_queries.add(match.group())
@@ -214,7 +216,7 @@ class mysql_database(Database):
                 password=os.getenv('MYSQL_ROOT_PASSWORD'),
                 port=os.getenv('MYSQL_PORT'),
                 host=os.getenv('MYSQL_HOST'),
-                database=db_name
+                database=str(db_name)
             )
             cur = con.cursor()
             cur.execute(query)
@@ -227,8 +229,8 @@ class mysql_database(Database):
             cur.close()
             return True, metadata
         except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
-            return None, str(e)
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
+            return False, str(e)
             # return False
 
 
@@ -240,7 +242,7 @@ class postgresql_database(Database):
             cursor = con.cursor()
             return cursor, con
         except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
             raise Exception("Failed to connect to db")
         
     async def create_database_and_schema(self, db_name):
@@ -260,7 +262,7 @@ class postgresql_database(Database):
             con.close()
             return True, ""
         except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
             return False, str(e)
     
     async def create_schema_in_db(self, db_name, schema):
@@ -292,9 +294,10 @@ class postgresql_database(Database):
                     try:
                         cursor.execute(command)
                     except psycopg2.errors.DuplicateSchema:
+                        logging.error("Duplicate Schema")
                         continue
                 else:
-                    print("comm", command)
+                    logging.info("comm", command)
                     try:
                         cursor.execute(command)
                     except psycopg2.errors.SyntaxError:
@@ -314,12 +317,13 @@ class postgresql_database(Database):
                             pass
                         else:
                             # The error is not related to the missing role, so raise it
+                            logging.error(e)
                             raise e
             cursor.close()
             con.close()
             return True, ""
         except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
             return False, str(e)
 
     async def get_tables_from_schema_id(self, schema_id):
@@ -341,7 +345,7 @@ class postgresql_database(Database):
             con.close()
             return table_list, ""
         except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
             return None, str(e)
 
 
@@ -380,7 +384,7 @@ class postgresql_database(Database):
             con.close()
             return table_info, ""
         except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
             return None, str(e)
 
 
@@ -428,8 +432,8 @@ class postgresql_database(Database):
             cur.close()
             return True, metadata
         except Exception as e:
-            print(f"ERROR: {e}, {traceback.print_exc()}")
-            return None, str(e)
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
+            return False, str(e)
             # return False
 
 

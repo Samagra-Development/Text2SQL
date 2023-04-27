@@ -9,8 +9,35 @@ relatedTables: <comma separated query params as an array>}
 Don't include anything else."""
 
 SQL_QUERY_PROMPT = """A database schema is given as a list of dictionary where the keys of dictionary are table names, and the values are dictionaries with two keys: "columns" and "references". The "columns" key maps to a list of tuples representing the columns in the table and their data type, and the "references" key maps to a dictionary where the keys are the names of related tables, and the values are dictionaries with two keys: "columns" and "referenced_by". The "columns" key maps to a list of tuples representing the columns in the related table, and the "referenced_by" key maps to a list of dictionaries representing the columns in the current table that reference the related table.
-Given the following list, Give a SQL query as a code snippet to "%s" and don't share anything else. Share only the query dont include any explanation or header.
+Given the following list, Give a SQL query for %s database as a code snippet to "%s" and don't share anything else. Share only the query dont include any explanation or header.
 --------------------------------------
 List: %s
 ----------------------------------
 Share only the query dont include anything else"""
+
+
+VERSION2_PROMPT = """You are an AI that converts natural language query to %s sql statements.
+You can use the following schema to answer the queries. Add meaningful aliases to the COLUMNS since they are going to be directly used to tabulate data
+
+```sql
+
+%s
+
+```
+
+Input - How many students are there in Lucknow who has first name as "Rahul"
+Output - SELECT COUNT(*) as student_count FROM student where Name like "Rahul"
+
+Input - What is the average passing marks for Hindi subject.
+Output SELECT AVG(pass_marks) as passing_marks FROM subject WHERE name = "Hindi";
+
+Input - %s
+"""
+
+TEST_CASE_GENERATION = """Based on the following SQL schema
+```sql
+%s
+```
+I am building an NLQ builder that needs to have an autocomplete. I need to generate 100 autocomplete suggestions for the NLQ that users would input. Also ensure the a NLQ is sufficient enough to actually get a SQL.
+The NLQ should be such that it allows for join between multiple table or tries to summarize data in some format. This is going to be used by data analyst. Avoid queries that return too much data - either summarize this or be very specific. Assume they would be verbose and would be speaking in a conversation mode with this being the first message to initiate conversation with a bot to figure out data.
+"""

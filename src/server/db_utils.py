@@ -6,6 +6,7 @@ import re
 from uuid import uuid4
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from dotenv import load_dotenv
+import logging
 
 file = Path(__file__).resolve()
 parent, ROOT_FOLDER = file.parent, file.parents[2]
@@ -20,6 +21,7 @@ async def get_connection():
         return cursor, con
     except Exception as e:
         print(f"ERROR: {e}, {traceback.print_exc()}")
+        logging.error("Failed to connect to db")
         raise Exception("Failed to connect to db")
 
 
@@ -32,6 +34,7 @@ async def insert_into_schema_holder(schema_file, schema_type, schema_name):
         print(f"{new_db_name}: inserted successfully")
         return new_db_name, ""
     except Exception as e:
+        logging.error(e)
         print(f"ERROR: {e}, {traceback.print_exc()}")
         return None, str(e)
     finally:
@@ -48,6 +51,7 @@ async def add_prompts(schema_id, prompt):
         print(f"{new_db_name}: inserted successfully")
         return True, ""
     except Exception as e:
+        logging.error(e)
         print(f"ERROR: {e}, {traceback.print_exc()}")
         return False, str(e)
     finally:
@@ -64,6 +68,7 @@ async def get_schema_type_by_schema_id(schema_id):
         schema_type = schema_type[0]
         return schema_type
     except Exception as e:
+        logging.error(e)
         print(f"ERROR: {e}, {traceback.print_exc()}")
         return None, str(e)
     finally:

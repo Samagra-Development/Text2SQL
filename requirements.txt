@@ -7,3 +7,4 @@ python-dotenv
 openai
 mysql-connector-python
 testcontainers
+quart_cors

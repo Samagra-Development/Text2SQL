@@ -4,6 +4,7 @@ from pathlib import Path
 import json
 import json
 from dotenv import load_dotenv
+import logging
 
 import openai
 
@@ -17,12 +18,14 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 async def chatGPT(prompt, context):
     print("Sending prompt to ChatGPT")
     response = ""
-    completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
+    completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}], temperature=0)
     response = completion.choices[0].message.content
     if (response == ""):
         # return await chatGPT(prompt, word, context)
+        logging.error("Empty response received from chatGPT")
         return None
     else:
+        logging.info(response)
         return response
 
 

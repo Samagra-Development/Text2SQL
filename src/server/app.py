@@ -7,17 +7,44 @@ from quart_cors import cors
 from utils import detect_lang, chatGPT, get_response, validate_schema_file
 from http import HTTPStatus
 from response_codes import ResponseCodes
-from prompts import SUBJECT_QUERY_PROMPT, SQL_QUERY_PROMPT
+from prompts import SUBJECT_QUERY_PROMPT, SQL_QUERY_PROMPT, VERSION2_PROMPT
 from db_utils import insert_into_schema_holder, add_prompts, get_schema_type_by_schema_id
 import json
 import aiohttp
 import time
-
+import logging
+from dotenv import load_dotenv
+from pathlib import Path
 from db.db_helper import database_factory
 from functools import wraps
 
+from werkzeug.utils import secure_filename
+
+file = Path(__file__).resolve()
+parent, ROOT_FOLDER = file.parent, file.parents[2]
+load_dotenv(dotenv_path=f"{ROOT_FOLDER}/.env")
+
 app = Quart(__name__)
-# app = cors(app)
+app = cors(app)
+
+# Set up a formatter for the log messages
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+# Create a handler for the INFO level logs
+info_handler = logging.FileHandler('./src/server/logs/info.log')
+info_handler.setLevel(logging.INFO)
+info_handler.setFormatter(formatter)
+
+# Create a handler for the ERROR level logs
+error_handler = logging.FileHandler('./src/server/logs/error.log')
+error_handler.setLevel(logging.ERROR)
+error_handler.setFormatter(formatter)
+
+# Configure the root logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)  # Set the lowest logging level you want to capture
+logger.addHandler(info_handler)
+logger.addHandler(error_handler)
 
 def auth_required(func):
     @wraps(func)
@@ -34,6 +61,24 @@ def auth_required(func):
             abort(401)
 
     return wrapper
+
+def save_uploaded_file(uploaded_file, target_folder, new_filename):
+    if not os.path.exists(target_folder):
+        os.makedirs(target_folder)
+
+    target_file_path = os.path.join(target_folder, secure_filename(new_filename))
+    with open(target_file_path, 'wb') as f:
+        f.write(uploaded_file)
+
+    return target_file_path
+
+def read_file(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            content = file.read()
+    except Exception as e:
+        print(f"ERROR: {e}, {traceback.print_exc()}")
+    return content
 
 @app.route('/')
 async def home():
@@ -56,7 +101,9 @@ async def prompt():
         if tables_list is not None:
             tables = ', '.join([f"'{elem}'" for elem in tables_list])
         chat_gpt_prompt = SUBJECT_QUERY_PROMPT % (tables, prompt)
+        logging.info(f"Query Prompt : {chat_gpt_prompt}")
         chat_gpt_response = await chatGPT(chat_gpt_prompt, app)
+        logging.info(f"ChatGpt response : {chat_gpt_response}")
         # todo: add validators for chatgpt responses
         chat_gpt_response = json.loads(chat_gpt_response)
         table_list = list()
@@ -65,12 +112,13 @@ async def prompt():
         for table in chat_gpt_response['relatedTables']:
             res_sub_query, err_msg_sub_query = await db.get_table_info(schema_id, table)
             table_list.append(res_sub_query)
-        query_prompt = SQL_QUERY_PROMPT % (prompt, table_list)
-        print("prompt ", query_prompt)
+        query_prompt = SQL_QUERY_PROMPT % (schema_type, prompt, table_list)
+        logging.info("prompt ", query_prompt)
         chat_gpt_query_response = await chatGPT(query_prompt, app)
-        print(chat_gpt_query_response)
         query = chat_gpt_query_response.replace('\n', ' ').replace("'''", '').replace('```', '')
         validate_flag, data = await db.validate_sql(schema_id, query)
+        if(validate_flag == False):
+            data = [{"error": data}]
         response = {"query": chat_gpt_query_response.replace('\n', ' ').replace("'''", '').replace('```', '')}
         status_code = ResponseCodes.QUERY_GENERATED.value
         http_status_code = HTTPStatus.OK
@@ -82,7 +130,45 @@ async def prompt():
         data=err_msg
     end = time.time()
     print(end - start)
-    return await get_response(response=response, status_code=status_code, http_status_code=http_status_code, err_msg=err_msg, data=data)
+    response = await get_response(response=response, status_code=status_code, http_status_code=http_status_code, err_msg=err_msg, data=data)
+    logging.info(response)
+    return response
+
+@app.route('/prompt/v2', methods=['POST'])
+@auth_required
+async def promptv2():
+    response = status_code = err_msg = http_status_code = ""
+    start = time.time()
+    data = await request.get_json()
+    prompt = data['prompt']
+    schema_id = data['schema_id']
+    schema_type = await get_schema_type_by_schema_id(schema_id)
+    print(prompt, schema_id, schema_type)
+    schema_file = read_file(f"./files/{schema_id}.sql")
+    factory = database_factory()
+    db = factory.get_database_connection(schema_type=schema_type)   
+    status, err = await add_prompts(schema_id, prompt)
+    if status is True:
+        chat_gpt_prompt = VERSION2_PROMPT % (schema_type, schema_file, prompt)
+        chat_gpt_response = await chatGPT(chat_gpt_prompt, app)
+        logging.info(f"ChatGpt response : {chat_gpt_response}")
+        query = chat_gpt_response.split('-')[1].replace("\\", "")
+        validate_flag, data = await db.validate_sql(schema_id, query)
+        response = {"query": query}
+        status_code = ResponseCodes.QUERY_GENERATED.value
+        http_status_code = HTTPStatus.OK
+    else:
+        response = "failed to insert prompt"
+        status_code = ResponseCodes.INSERT_PROMPT_ERROR.value
+        http_status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+        err_msg = err
+        data=err_msg
+    end = time.time()
+    print(end - start)
+    print(data)
+    response = await get_response(response=response, status_code=status_code, http_status_code=http_status_code, err_msg=err_msg, data=data)
+    logging.info(response)
+    return response
 
 
 # todo: add option for getting schema via post body too
@@ -109,6 +195,9 @@ async def onboard():
                 create_schema, onboarding_error = await db.create_schema_in_db(schema_id, schema_file)
                 print(create_schema, onboarding_error)
                 if create_schema is True:
+                    target_folder = './src/server/files'
+                    new_filename = f"{schema_id}.sql"
+                    saved_file_path = save_uploaded_file(schema_file, target_folder, new_filename)
                     response = {"schema_id": schema_id, "message": "schema onboarded"}
                     status_code = ResponseCodes.SCHEMA_ONBOARDED.value
                     http_status_code = HTTPStatus.OK
@@ -129,9 +218,31 @@ async def onboard():
             err_msg = schema_err
         # await uploaded_file.save(uploaded_file.filename)
     end = time.time()
-    print(end - start)
-    return await get_response(response=response, status_code=status_code, http_status_code=http_status_code, err_msg=err_msg)
+    logging.info("Time elapsed: %s", end - start)
+    response = await get_response(response=response, status_code=status_code, http_status_code=http_status_code, err_msg=err_msg)
+    logging.info(response)
+    return response
 
+@app.route('/data', methods=['GET'])
+@auth_required
+async def getData():
+    response = status_code = err_msg = http_status_code = ""
+    start = time.time()
+    data = await request.get_json()
+    query = data['query']
+    schema_id = data['schema_id']
+    schema_type = await get_schema_type_by_schema_id(schema_id)
+    factory = database_factory()
+    db = factory.get_database_connection(schema_type=schema_type)
+    validate_flag, data = await db.validate_sql(schema_id, query)
+    if(validate_flag == False):
+            data = [{"error": data}]
+    response = {"query": query}
+    status_code = ResponseCodes.QUERY_GENERATED.value
+    http_status_code = HTTPStatus.OK
+    response = await get_response(response=response, status_code=status_code, http_status_code=http_status_code, err_msg=err_msg, data=data)
+    logging.info(response)
+    return response
 
 @ app.before_serving
 async def startup():
