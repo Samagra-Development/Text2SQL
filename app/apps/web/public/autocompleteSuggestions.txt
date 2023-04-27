@@ -1,0 +1,323 @@
+Find all students in a specific class.
+Get the total capacity of a class.
+List all schools in a particular city.
+Count the number of students in each class.
+Show the average marks obtained by students in each subject.
+Find the pass rate for a specific subject.
+List all students who failed in any subject.
+Show the total attendance for each student.
+Find the students with the highest marks in each subject.
+Get the percentage of students present for mid-day meals.
+Show the students with perfect attendance.
+List all subjects offered in a specific class.
+Find the students with the lowest marks in each subject.
+Get the top 10 students based on their total marks.
+Count the number of students in each school.
+Show the subject-wise pass percentage for each class.
+List all students who scored full marks in any subject.
+Calculate the average attendance for each class.
+Show the students who have never been absent.
+Find the students who have not attended any mid-day meals.
+Get the school with the highest number of students.
+List all students who have scored above a certain percentage.
+Show the subject-wise performance of a specific student.
+Calculate the overall pass percentage for each school.
+List all students who have scored below a certain percentage.
+Get the average marks obtained by students in each class.
+Show the students who have attended all mid-day meals.
+Find the school with the highest pass percentage.
+Calculate the attendance percentage for each student.
+List all students who have scored the maximum marks in a specific assessment type.
+List all classes with their total number of students.
+Show the total number of schools in each state.
+Find the youngest and oldest students in each class.
+Get the students who scored the highest total marks in each class.
+Calculate the pass percentage for each assessment type.
+List all students with their respective class and school information.
+Show the students who have the most and least absences.
+Find the subject with the highest average marks in each class.
+Get the top 5 schools based on the average marks of their students.
+Count the number of students born in each month.
+List all students who scored above the class average in each subject.
+Show the attendance percentage for each school.
+Find the class with the highest and lowest average attendance.
+Get the students who improved their marks the most between two assessment types.
+Calculate the average mid-day meal attendance for each class.
+List all subjects with the lowest pass rates in each class.
+Show the top 10 students based on their improvement in total marks.
+Find the students who scored below the class average in each subject.
+Get the students who have attended at least a certain number of mid-day meals.
+Calculate the overall pass percentage for each assessment type.
+List all students who have scored the minimum pass marks in any subject.
+Show the schools with the highest and lowest average marks.
+Find the subject with the lowest average marks in each class.
+Get the bottom 5 schools based on the average marks of their students.
+Count the number of students who passed or failed in each subject.
+List all students with their total marks and average percentage.
+Show the schools with the highest and lowest mid-day meal attendance.
+Find the students who consistently scored above the class average.
+Get the attendance percentage for each student for a specific month.
+List all students who have scored the minimum marks in a specific assessment type.
+List students with perfect attendance and a pass in all subjects.
+Show the top 3 students in each subject who also have above-average attendance.
+Find the students who scored in the top 10% in each subject and attended all mid-day meals.
+Get the class with the highest average marks for a specific assessment type in each school.
+Calculate the overall pass percentage for each school by combining all subjects and assessment types.
+List all students who scored above the class average in at least three subjects.
+Show the schools with the highest pass rate in all subjects combined.
+Find the students who scored below the class average in more than two subjects but have perfect attendance.
+Get the subject with the highest pass rate in each class for a specific assessment type.
+Count the number of students in each class who attended at least 80% of the mid-day meals.
+List all students who improved their marks in each subject between two consecutive assessment types.
+Show the schools with the highest average marks in a specific assessment type for each subject.
+Find the students who scored in the bottom 10% in each subject but have above-average attendance.
+Get the class with the highest average improvement in marks between two consecutive assessment types.
+Calculate the pass percentage for each subject in each class for a specific assessment type.
+List all students who scored above the class average in each subject and attended more than 90% of mid-day meals.
+Show the schools with the highest pass rate in a specific subject for a specific assessment type.
+Find the students who scored below the class average in at least two subjects and attended less than 80% of mid-day meals.
+Get the subject with the lowest pass rate in each class for a specific assessment type.
+Count the number of students in each class who attended less than 50% of the mid-day meals.
+List all students who scored above the class average in a specific subject for each assessment type.
+Show the schools with the highest average marks in each subject for a specific assessment type.
+Find the students who scored in the top 5% in each subject and attended less than 70% of mid-day meals.
+Get the class with the lowest average marks for a specific assessment type in each school.
+Calculate the pass percentage for each subject in each school for a specific assessment type.
+List all students who scored below the class average in each subject and attended more than 90% of mid-day meals.
+Show the schools with the lowest pass rate in all subjects combined.
+Find the students who scored above the class average in more than two subjects but have below-average attendance.
+Get the subject with the highest average marks in each class for a specific assessment type.
+Count the number of students in each class who attended at least 90% of the mid-day meals.
+List all students who did not improve their marks in each subject between two consecutive assessment types.
+Show the schools with the lowest average marks in a specific assessment type for each subject.
+Find the students who scored in the bottom 5% in each subject and attended more than 80% of mid-day meals.
+Get the class with the lowest average improvement in marks between two consecutive assessment types.
+Calculate the pass percentage for each subject in each class for all assessment types combined.
+List all students who scored below the class average in a specific subject for each assessment type.
+Get the subject with the lowest average marks in each class for a specific assessment type.
+Count the number of students in each class who attended between 50% and 70% of the mid-day meals.
+List all students who consistently scored above the class average in at least three subjects.
+Show the schools with the highest average marks in a specific subject for a specific assessment type.
+Find the students who scored in the bottom 10% in each subject and attended between 70% and 90% of mid-day meals.
+Get the class with the highest percentage of students passing all subjects for a specific assessment type.
+Calculate the pass percentage for each subject in each school for all assessment types combined.
+List all students who scored above the class average in a specific subject for a specific assessment type and attended more than 90% of mid-day meals.
+Show the schools with the highest percentage of students passing a specific subject for a specific assessment type.
+Find the students who scored below the class average in more than two subjects and attended between 80% and 100% of mid-day meals.
+Get the subject with the highest percentage of students passing in each class for a specific assessment type.
+Count the number of students in each class who attended more than 70% of the mid-day meals.
+How many schools are in the database?
+What are the names of all the schools in the database?
+What are the addresses of all the schools in the database?
+What is the capacity of each class in the database?
+What are the names of all the students in the database?
+What is the name of the school that a particular student attends?
+What is the address of the school that a particular student attends?
+What is the capacity of the class that a particular student attends?
+What is the name of the class that a particular student attends?
+What are the names of all the classes in the database?
+What are the names of all the subjects in the database?
+What is the maximum marks for a particular subject?
+What is the pass marks for a particular subject?
+What are the names of all the students who scored above a certain percentage in a particular subject?
+What are the names of all the students who failed in a particular subject?
+What are the names of all the students who scored below a certain percentage in a particular subject?
+What is the overall pass percentage of a particular class in a particular subject?
+What is the overall pass percentage of a particular school in a particular subject?
+What is the highest score achieved by a particular student in a particular subject?
+What is the lowest score achieved by a particular student in a particular subject?
+What is the average score achieved by a particular student in a particular subject?
+What is the average score achieved by all students in a particular subject?
+What is the average score achieved by all students in a particular class?
+What is the average score achieved by all students in a particular school?
+What is the attendance percentage of a particular student?
+What is the attendance percentage of a particular class?
+What is the attendance percentage of a particular school?
+What is the overall attendance percentage of all the students?
+What is the overall attendance percentage of all the classes?
+What is the overall attendance percentage of all the schools?
+What is the average attendance percentage of a particular student?
+What is the average attendance percentage of all the students in a particular class?
+What is the average attendance percentage of all the students in a particular school?
+What is the highest attendance percentage achieved by a particular student?
+What is the lowest attendance percentage achieved by a particular student?
+What is the highest attendance percentage achieved by a particular class?
+What is the lowest attendance percentage achieved by a particular class?
+What is the highest attendance percentage achieved by a particular school?
+What is the lowest attendance percentage achieved by a particular school?
+What is the mid-day meal status of a particular student on a particular day?
+What is the mid-day meal status of all the students on a particular day?
+What is the mid-day meal status of a particular student on all days?
+What is the mid-day meal status of all the students on all days?
+What is the total number of mid-day meals served on a particular day?
+What is the total number of mid-day meals served in a particular school?
+What is the total number of mid-day meals served to a particular student?
+What is the total number of mid-day meals served to all students in a particular class?
+What is the total number of mid-day meals served to all students in a particular school?
+What is the total number of mid-day meals
+What is the name of the school with ID "SCH001"?
+What is the name of the student with ID "STU001"?
+What is the date of birth of the student with ID "STU001"?
+What is the capacity of the class with ID "CLS001"?
+What is the name of the class with ID "CLS001"?
+What is the maximum marks for the subject with ID "SUB001"?
+What is the pass marks for the subject with ID "SUB001"?
+What is the marks obtained by the student with ID "STU001" in the subject with ID "SUB001" in assessment type "UT-1"?
+What is the assessment type for the mark with ID "MRK001"?
+What is the marks obtained by the student with ID "STU001" in the subject with ID "SUB001" in all assessments?
+What is the attendance status of the student with ID "STU001" on date "2022-01-01"?
+What is the mid-day meal status of the student with ID "STU001" on date "2022-01-01"?
+What is the name of the school in city "New York"?
+What is the name of the student with email "john@example.com"?
+What is the name of the class in which the student with ID "STU001" studies?
+What is the name of the subject with ID "SUB001"?
+What is the highest marks obtained by any student in the subject with ID "SUB001"?
+What is the lowest marks obtained by any student in the subject with ID "SUB001"?
+What is the average marks obtained by all students in the subject with ID "SUB001"?
+What is the pass percentage of the class with ID "CLS001" in the subject with ID "SUB001"?
+What is the attendance percentage of the student with ID "STU001" in the class with ID "CLS001"?
+What is the mid-day meal status of the student with ID "STU001" on all dates?
+What is the total number of mid-day meals served to the student with ID "STU001"?
+What is the total number of mid-day meals served on date "2022-01-01"?
+What is the total number of mid-day meals served to all students in the school with ID "SCH001"?
+What is the highest attendance percentage achieved by any student in the class with ID "CLS001"?
+What is the lowest attendance percentage achieved by any student in the class with ID "CLS001"?
+What is the average attendance percentage of all students in the class with ID "CLS001"?
+What is the overall attendance percentage of the school with ID "SCH001"?
+What is the overall pass percentage of the school with ID "SCH001" in the subject with ID "SUB001"?
+What is the name of the student with phone number "123-456-7890"?
+What is the name of the school in state "California"?
+What is the name of the student with father's name "John Doe"?
+What is the capacity of the class with name "Mathematics 101"?
+What is the maximum marks for the subject with name "English"?
+What is the pass marks for the subject with name "Mathematics"?
+What is the average marks obtained by the student with ID "STU001" in all subjects?
+What is the highest marks obtained by any student in any subject?
+What is the lowest marks obtained by any student in any subject?
+What is the pass percentage of the school with ID "SCH001" in all subjects?
+What is the attendance percentage of the student with ID "STU001" on date "2022-01-01" for the class with name "Mathematics 101"?
+What is the mid-day meal status of the student with ID "STU001" on date "2022-01-01" for the school with name "XYZ School"?
+What is the name of the school with address "123 Main St, Anytown, USA"?
+What is the name of the class with capacity greater than 50?
+What is the name of the subject with pass marks greater than 40?
+What is the name of the student with email ending in "@example.com"?
+What is the highest attendance percentage achieved by any student in any class?
+What is the lowest attendance percentage achieved by any student in any class?
+What is the average attendance percentage of all students in all classes?
+What is the overall attendance percentage of the school with ID "SCH001" for the month of January 2022?
+What is the overall pass percentage of the school with ID "SCH001" for the academic year 2021-2022?
+What is the total number of mid-day meals served to the student with ID "STU001" in the month of January 2022?
+What is the total number of mid-day meals served in the school with ID "SCH001" in the month of January 2022?
+What is the highest marks obtained by any student in the class with name "Science 101"?
+What is the lowest marks obtained by any student in the class with name "Science 101"?
+What is the average marks obtained by all students in the class with name "Science 101"?
+What is the pass percentage of the class with name "Science 101" in the subject with name "Biology"?
+What is the attendance percentage of the student with ID "STU001" on date "2022-01-01" for the school with name "ABC School"?
+What is the mid-day meal status of the student with ID "STU001" on date "2022-01-01" for the class with name "History 101"?
+What is the name of the subject with the highest pass percentage in the school with ID "SCH001"?
+What is the name of the school with the most number of students?
+What is the name of the student with the most number of absences?
+What is the highest marks obtained by any student in the class with name "English 101" in the subject with name "Literature"?
+What is the lowest marks obtained by any student in the class with name "Mathematics 101" in the subject with name "Algebra"?
+What is the average attendance percentage of all students in the school with ID "SCH001" for the month of February 2022?
+What is the overall attendance percentage of the class with ID "CLS001" for the academic year 2021-2022?
+What is the total number of mid-day meals served to the student with ID "STU002" in the month of February 2022?
+What is the total number of mid-day meals served in the school with ID "SCH002" in the month of February 2022?
+What is the highest marks obtained by any student in the subject with name "History"?
+What is the lowest marks obtained by any student in the subject with name "Geography"?
+What is the pass percentage of the subject with name "Physics" in the school with ID "SCH003"?
+What is the attendance percentage of the student with ID "STU003" on date "2022-02-01" for the class with name "Science 101"?
+What is the mid-day meal status of the student with ID "STU003" on date "2022-02-01" for the school with name "PQR School"?
+What is the name of the school with address "456 Elm St, Anytown, USA"?
+What is the name of the class with capacity less than 30?
+What is the name of the subject with pass marks less than 35?
+What is the name of the student with phone number "555-1234"?
+What is the highest attendance percentage achieved by any student in any school?
+What is the lowest attendance percentage achieved by any student in any school?
+What is the average attendance percentage of all students in all schools?
+What is the overall attendance percentage of the school with ID "SCH004" for the month of March 2022?
+What is the overall pass percentage of the class with name "Geography 101" in the subject with name "World Geography"?
+What is the total number of mid-day meals served to the student with ID "STU004" in the month of March 2022?
+What is the total number of mid-day meals served in the school with ID "SCH003" in the month of March 2022?
+What is the highest marks obtained by any student in the class with name "Science 101" in the subject with name "Physics" in assessment type "UT-1"?
+What is the lowest marks obtained by any student in the class with name "Mathematics 101" in the subject with name "Geometry" in assessment type "UT-2"?
+What is the average marks obtained by all students in the class with name "English 101" in the subject with name "Grammar"?
+What is the pass percentage of the class with name "History 101" in the subject with name "US History"?
+What are the names of all the schools?
+How many schools are there in the database?
+What is the address of the school with ID "123"?
+Which city is school "XYZ" located in?
+How many students are enrolled in each school?
+What is the capacity of class "10A"?
+Which school has the highest capacity for class "10A"?
+Which classes have a capacity greater than 30 students?
+How many subjects are taught in each class?
+What is the maximum marks for subject "Maths" in class "10B"?
+Which subjects have a pass marks of 40?
+How many students are enrolled in each class for subject "Science"?
+What is the average marks obtained by students in subject "English"?
+Which student scored the highest marks in subject "Science" in class "10A"?
+How many students scored above 80 marks in subject "Maths"?
+What is the attendance percentage for each student in class "9B"?
+How many students were present on a particular date in class "8C"?
+What is the percentage of students absent in class "7A"?
+Which students were absent on a particular date in class "10A"?
+How many students have perfect attendance in class "6B"?
+What is the date of the latest attendance record?
+Which student has the best attendance record in class "9A"?
+How many students had mid-day meals on a particular date in school "ABC"?
+What is the percentage of students who had mid-day meals in school "XYZ"?
+Which student did not have mid-day meal on a particular date in school "PQR"?
+How many students had mid-day meals for the entire month in school "DEF"?
+What is the average attendance of students who had mid-day meals in school "GHI"?
+Which student had the highest attendance record among those who had mid-day meals in school "JKL"?
+How many students had perfect attendance and also had mid-day meals in school "MNO"?
+What is the percentage of students who had mid-day meals and scored above 60 marks in subject "History" in school "PQR"?
+Which school has the highest number of students with perfect attendance?
+How many students scored above 60 marks in subject "Geography" in school "ABC"?
+What is the average marks obtained by students who had mid-day meals in school "DEF"?
+Which student had the highest attendance record among those who scored above 70 marks in subject "Chemistry" in school "XYZ"?
+How many students scored below 40 marks in subject "Physics" in class "11A"?
+What is the percentage of students who scored above 50 marks in subject "Biology" in class "12B"?
+Which student had the lowest attendance record among those who scored below 30 marks in subject "Maths" in class "10A"?
+How many students had mid-day meals and also scored above 80 marks in subject "English" in school "GHI"?
+What is the average attendance of students who scored above 60 marks in subject "History" in school "PQR"?
+Which student had the best attendance record among those who scored below 40 marks in subject "Chemistry" in class "9C"?
+List all students who scored above the class average in at least three subjects for the "FA" assessment type and attended more than 90% of mid-day meals.
+Show the schools with the highest percentage of students scoring above the class average in all subjects for the "UT-1" assessment type.
+Find the students with the highest total marks in their class who also attended between 70% and 90% of mid-day meals.
+Get the subject with the biggest difference in average marks between "FA" and "HY" assessment types in each class.
+Count the number of students who scored above the class average in at least three subjects for the "UT-3" assessment type.
+List all students who scored the lowest marks in at least two subjects for the "HY" assessment type and attended fewer than 70% of mid-day meals.
+Show the schools with the lowest percentage of students scoring above the class average in all subjects for the "UT-1" assessment type.
+Find the top 5 students in each class based on their improvement in total marks between "UT-2" and "FA" assessment types.
+Get the students who scored the highest total marks across all subjects in each school for the "UT-2" assessment type.
+Calculate the overall pass percentage for each class based on their performance in the "FA" assessment type.
+List all students who scored the highest marks in at least two subjects for the "UT-1" assessment type and attended more than 80% of mid-day meals.
+Show the schools with the highest percentage of students scoring above the class average in at least three subjects for the "UT-3" assessment type.
+Count the number of students who scored below the class average in at least three subjects for the "UT-1" assessment type.
+List all students who scored the lowest marks in at least two subjects for the "FA" assessment type and attended more than 70% of mid-day meals.
+Show the schools with the lowest percentage of students scoring above the class average in all subjects for the "UT-3" assessment type.
+Find the top 5 students in each class based on their improvement in total marks between "UT-3" and "FA" assessment types.
+Get the students who scored the highest total marks across all subjects in each school for the "UT-1" assessment type.
+Calculate the overall pass percentage for each class based on their performance in the "UT-2" assessment type.
+List all students who scored the highest marks in at least two subjects for the "FA" assessment type and attended more than 90% of mid-day meals.
+Show the schools with the highest percentage of students scoring above the class average in all subjects for the "UT-3" assessment type.
+Find the students who attended fewer than 50% of mid-day meals but scored above the class average in at least two subjects for the "UT-2" assessment type.
+Get the subject with the biggest difference in average marks between "FA" and "UT-1" assessment types in each class.
+Count the number of students who scored below the class average in at least three subjects for the "UT-3" assessment type.
+List all students who scored the lowest marks in at least two subjects for the "UT-2" assessment type and attended more than 80% of mid-day meals.
+Show the schools with the lowest percentage of students scoring above the class average in all subjects for the "UT-2" assessment type.
+Find the top 5 students in each class based on their improvement in total marks between "UT-1" and "FA" assessment types.
+Get the students who scored the highest total marks across all subjects in each school for the "UT-3" assessment type.
+Calculate the overall pass percentage for each class based on their performance in the "UT-3" assessment type.
+List all students who scored the highest marks in at least two subjects for the "UT-2" assessment type and attended more than 90% of mid-day meals.
+Show the schools with the highest percentage of students scoring above the class average in all subjects for the "FA" assessment type.
+Find the students who attended fewer than 50% of mid-day meals but scored above the class average in at least two subjects for the "UT-3" assessment type.
+Get the subject with the smallest difference in average marks between "FA" and "UT-2" assessment types in each class.
+Count the number of students who scored below the class average in at least three subjects for the "UT-2" assessment type.
+List all students who scored the lowest marks in at least two subjects for the "UT-3" assessment type and attended more than 70% of mid-day meals.
+Show the schools with the lowest percentage of students scoring above the class average in all subjects for the "FA" assessment type.
+Find the top 5 students in each class based on their improvement in total marks between "UT-2"
+
+

@@ -49,28 +49,33 @@ const CommonInterface = () => {
         transformDatabaseArray(schemaData, tempData);
         setData(tempData)
         handleDbSelection(process.env.NEXT_PUBLIC_DB)
-        handleSchemaSelection(process.env.NEXT_PUBLIC_SCHEMA, process.env.NEXT_PUBLIC_DB, tempData)
+        handleSchemaSelection(process.env.NEXT_PUBLIC_SCHEMA)
+        fetch('/autocompleteSuggestions.txt').then(r => r.text()).then(text => {
+            setPrompts(text.split(/\n/));
+        });
+
     }
 
     const handleDbSelection = (e) => {
         setSelectedDb(e)
     }
 
-    const handleSchemaSelection = (sc, db, data) => {
+    const handleSchemaSelection = (sc) => {
         setSchema(sc)
-        console.log("d->", sc, db, data)
-        setPrompts([...data?.[db]?.details?.[sc]?.samplePrompts])
 
     }
 
-    const handleSearch = async () => {
+    const handleSearch = async (newQuery) => {
         if (!searchQuery || loading) return;
+        let searchResponse = null;
         setLoading(true);
         setQueryData('')
         setQuery('')
         setError('');
         setDataTable([]);
-        const searchResponse = await getPromptResponse(searchQuery, data?.[selectedDb]?.details?.[schema]?.schemaId)
+        if (newQuery?.length)
+            searchResponse = await getPromptResponse(newQuery, data?.[selectedDb]?.details?.[schema]?.schemaId)
+        else searchResponse = await getPromptResponse(searchQuery, data?.[selectedDb]?.details?.[schema]?.schemaId)
         setLoading(false);
         setQuery(searchResponse?.result?.data?.query)
         const queryData = searchResponse?.result?.data?.query_data;
@@ -108,8 +113,6 @@ const CommonInterface = () => {
     }, [])
 
 
-    console.log(data);
-
     return (
         <div className={styles.container}>
             <div className={styles.searchContainer}>
@@ -141,9 +144,12 @@ const CommonInterface = () => {
             >
                 <div>
                     <div className={styles.queryHeader}>
-                        <p>Generated Query</p>
+                        <div style={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <p>Query Results</p>
+                            {query?.length > 0 && <div onClick={() => { handleSearch(query) }} className={styles.exportBtn + " animate__animated animate__fadeInDown"}>Search Query</div>}
+                        </div>
                         <div className={styles.blueLine}></div>
-                        <textarea value={query} />
+                        <textarea value={query} onChange={e => setQuery(e.target.value)} />
                         <div style={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center', justifyContent: 'space-between' }}>
                             <p>Query Results</p>
                             {dataTable?.length > 0 && <CSVLink data={dataTable} filename={"data.csv"}><div className={styles.exportBtn + " animate__animated animate__fadeInDown"}>Export</div></CSVLink>}
