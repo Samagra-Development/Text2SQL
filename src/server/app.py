@@ -25,7 +25,7 @@ parent, ROOT_FOLDER = file.parent, file.parents[2]
 load_dotenv(dotenv_path=f"{ROOT_FOLDER}/.env")
 
 app = Quart(__name__)
-app = cors(app)
+# app = cors(app)
 
 # Set up a formatter for the log messages
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
@@ -243,6 +243,39 @@ async def getData():
     response = await get_response(response=response, status_code=status_code, http_status_code=http_status_code, err_msg=err_msg, data=data)
     logging.info(response)
     return response
+
+@app.route('/schema', methods=['GET'])
+@auth_required
+async def getSchema():
+    response = status_code = err_msg = http_status_code = ""
+    start = time.time()
+    args = request.args
+    schema_id = args.get("schema_id", default="", type=str)
+
+    if schema_id:
+        file_path = f'./files/{schema_id}.sql'
+        if os.path.isfile(file_path):
+            schema_content = read_file(file_path)
+            response = {"schema": schema_content}
+            status_code = ResponseCodes.SCHEMA_RETRIEVED.value
+            http_status_code = HTTPStatus.OK
+        else:
+            response = "Schema file not found"
+            status_code = ResponseCodes.SCHEMA_NOT_FOUND.value
+            http_status_code = HTTPStatus.NOT_FOUND
+            err_msg = "File not found"
+    else:
+        response = "Schema ID not provided"
+        status_code = ResponseCodes.SCHEMA_ID_NOT_PROVIDED.value
+        http_status_code = HTTPStatus.BAD_REQUEST
+        err_msg = "Schema ID not provided"
+
+    end = time.time()
+    logging.info("Time elapsed: %s", end - start)
+    response = await get_response(response=response, status_code=status_code, http_status_code=http_status_code, err_msg=err_msg)
+    logging.info(response)
+    return response
+
 
 @ app.before_serving
 async def startup():
