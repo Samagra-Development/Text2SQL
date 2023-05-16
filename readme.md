@@ -30,7 +30,7 @@ The process is
 ### APIs
 - Assuming this system is single tenant and single database query tool
 - Onboard a Schema using the `/onboard` API => schema.sql => already onboarded to the database | P2
-- `/query` => takes in a single param, `prompt` and based on that prompt return the SQL if ChatGPT provides a valid SQL.
+- `/prompt` => takes in a two param, `prompt` and `schema_id` and based on that prompt return the SQL if ChatGPT provides a valid SQL.
 
 ### Installation
 
@@ -38,21 +38,10 @@ The process is
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+pip install -r src/server/sql_graph/requirements.txt
+docker compose -f docker-compose.gitpod.yml up -d
 ```
 
-#### pygraphviz installation
-
-## Linux
-```bash
-sudo apt-get install libgraphviz-dev
-pip install --global-option=build_ext --global-option="-I/usr/include/graphviz" --global-option="-L/usr/lib/x86_64-linux-gnu/" --install-option="--library-path=/usr/lib/x86_64-linux-gnu/graphviz" pygraphviz
-```
-
-## Mac OS
-```bash
-sudo apt-get install libgraphviz-dev
-pip install --global-option=build_ext --global-option="-I/opt/homebrew/Cellar/graphviz/8.0.5/include/" --global-option="-L/opt/homebrew/Cellar/graphviz/8.0.5/lib/" pygraphviz
-```
 
 ### Running Tests
 
@@ -69,12 +58,39 @@ python src/server/app.py
 ### Testing the prompt
 
 ```bash
-curl --location 'http://localhost:5078/prompt' \
+curl --location 'https://localhost:5078/prompt/v3' \
 --header 'Content-Type: application/json' \
---header 'Cookie: csrftoken=SWTHvaNeh4g3KImyRotjdDcMYuiW0dw4ctce3LXEkRWHJx71t7nKMLCk70wSdSSB' \
+--header 'Authorization: Basic dGVzdDp0ZXN0' \
 --data '{
-    "prompt": "Hey how are you?"
+    "schema_id": "<Schema ID>",
+    "prompt": "How many Primary School are there?"
 }'
 ```
+
+### Setting up dummy education database
+
+```bash
+cd src/server/db/mock-data
+sudo sh init_mock_data.sh 
+```
+
+Note down the Schema_ID that gets printed on the terminal. This will have to be sent as param in the prompt api.
+
+### pygraphviz installation
+
+This will be required for sql_graph.
+
+#### Linux
+```bash
+sudo apt-get install libgraphviz-dev
+pip install --global-option=build_ext --global-option="-I/usr/include/graphviz" --global-option="-L/usr/lib/x86_64-linux-gnu/" --install-option="--library-path=/usr/lib/x86_64-linux-gnu/graphviz" pygraphviz
+```
+
+#### Mac OS
+```bash
+sudo apt-get install libgraphviz-dev
+pip install --global-option=build_ext --global-option="-I/opt/homebrew/Cellar/graphviz/8.0.5/include/" --global-option="-L/opt/homebrew/Cellar/graphviz/8.0.5/lib/" pygraphviz
+```
+
 # Contribution
 Check our [QuickStart guide](./contribution.md) if you want to contribute to this project.
