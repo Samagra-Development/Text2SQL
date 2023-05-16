@@ -4,11 +4,11 @@
 API_ENDPOINT="https://api.t2s.samagra.io/onboard"
 
 # Set the path to the schema file
-SCHEMA_FILE="/Users/suyashgautam/Documents/EduDataGenerator/EduDataGenerator/Dummy/school.sql"
+SCHEMA_FILE="./school.sql"
 
 # Set the schema type and name
 SCHEMA_TYPE="mysql"
-SCHEMA_NAME="Up School 2"
+SCHEMA_NAME="Up School"
 
 # Set the CSRF token and credentials
 CSRF_TOKEN="SWTHvaNeh4g3KImyRotjdDcMYuiW0dw4ctce3LXEkRWHJx71t7nKMLCk70wSdSSB"

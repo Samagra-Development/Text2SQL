@@ -13,7 +13,7 @@ files_table_config = {
     "class_data.csv" : "class",
     "subject_data.csv" : "subject",
     "student_data.csv" : "student",
-    "marks_data.csv" : "marks",
+    "marks_data.csv" : "mark",
     "attendance_data.csv" : "attendance",
     "mid_day_meal_data.csv" : "mid_day_meal"
 }

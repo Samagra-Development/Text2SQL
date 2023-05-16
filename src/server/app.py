@@ -1,3 +1,6 @@
+import sys
+sys.path.append('./sql_graph')
+
 import os
 
 from quart import Quart, request, abort, current_app
@@ -17,6 +20,8 @@ from dotenv import load_dotenv
 from pathlib import Path
 from db.db_helper import database_factory
 from functools import wraps
+
+from sql_graph.src.graph_modified import *
 
 from werkzeug.utils import secure_filename
 
@@ -45,6 +50,11 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)  # Set the lowest logging level you want to capture
 logger.addHandler(info_handler)
 logger.addHandler(error_handler)
+
+def get_tables_from_schema_id(G):
+    tables_list = [x for x in G.tables]
+    print(tables_list)
+    return tables_list
 
 def auth_required(func):
     @wraps(func)
@@ -77,7 +87,7 @@ def read_file(file_path):
         with open(file_path, 'r') as file:
             content = file.read()
     except Exception as e:
-        print(f"ERROR: {e}, {traceback.print_exc()}")
+        print(f"ERROR: {e}, {e.print_exc()}")
     return content
 
 @app.route('/')
@@ -120,6 +130,55 @@ async def prompt():
         if(validate_flag == False):
             data = [{"error": data}]
         response = {"query": chat_gpt_query_response.replace('\n', ' ').replace("'''", '').replace('```', '')}
+        status_code = ResponseCodes.QUERY_GENERATED.value
+        http_status_code = HTTPStatus.OK
+    else:
+        response = "failed to insert prompt"
+        status_code = ResponseCodes.INSERT_PROMPT_ERROR.value
+        http_status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+        err_msg = err
+        data=err_msg
+    end = time.time()
+    print(end - start)
+    response = await get_response(response=response, status_code=status_code, http_status_code=http_status_code, err_msg=err_msg, data=data)
+    logging.info(response)
+    return response
+
+@app.route('/prompt/v3', methods=['POST'])
+@auth_required
+async def promptv3():
+    response = status_code = err_msg = http_status_code = ""
+    start = time.time()
+    data = await request.get_json()
+    prompt = data['prompt']
+    schema_id = data['schema_id']
+    schema_type = await get_schema_type_by_schema_id(schema_id)
+    factory = database_factory()
+    db = factory.get_database_connection(schema_type=schema_type)    
+    status, err = await add_prompts(schema_id, prompt)
+    if status is True:
+        # tables_list, err = await db.get_tables_from_schema_id(schema_id)
+        schema_file = read_file(f"./files/{schema_id}.sql")
+        G = sql_to_graph(schema_file)
+        tables_list = get_tables_from_schema_id(G)
+        if tables_list is not None:
+            tables = ', '.join([f"'{elem}'" for elem in tables_list])
+        chat_gpt_prompt = SUBJECT_QUERY_PROMPT % (tables, prompt)
+        logging.info(f"Query Prompt : {chat_gpt_prompt}")
+        chat_gpt_response = await chatGPT(chat_gpt_prompt, app)
+        logging.info(f"ChatGpt response : {chat_gpt_response}")
+        # todo: add validators for chatgpt responses
+        chat_gpt_response = json.loads(chat_gpt_response)
+        Sub_G = get_sub_graph(G, chat_gpt_response['subject'], 1)
+        sub_schema = graph_to_sql(Sub_G)
+        query_prompt = VERSION2_PROMPT % (schema_type, sub_schema, prompt)
+        logging.info("prompt ", query_prompt)
+        chat_gpt_query_response = await chatGPT(query_prompt, app) 
+        query = chat_gpt_query_response.split('-')[1].replace('\n', ' ').replace("'''", '').replace('```', '').replace("\\", "")
+        validate_flag, data = await db.validate_sql(schema_id, query)
+        if(validate_flag == False):
+            data = [{"error": data}]
+        response = {"query": query}
         status_code = ResponseCodes.QUERY_GENERATED.value
         http_status_code = HTTPStatus.OK
     else:

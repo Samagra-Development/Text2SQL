@@ -1,6 +1,7 @@
 CREATE TABLE school (
   id VARCHAR(255) PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
+  type VARCHAR(255) NOT NULL, /* Primary 1 to 5 class, Secondary 6 to 10 class, Senior Secondary  */
   address VARCHAR(255) NOT NULL,
   city VARCHAR(255) NOT NULL,
   state VARCHAR(255) NOT NULL,
@@ -18,6 +19,7 @@ CREATE TABLE class (
 CREATE TABLE student (
   id VARCHAR(255) PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
+  gender VARCHAR(255) NOT NULL,
   fathers_name VARCHAR(255) NOT NULL,
   date_of_birth DATE NOT NULL,
   class_id VARCHAR(255) NOT NULL REFERENCES class(id),

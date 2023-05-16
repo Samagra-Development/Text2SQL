@@ -14,8 +14,7 @@ from faker import Faker
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
 from geopy.distance import great_circle
-from math import radians, sin, cos, sqrt, atan2
-from rapidfuzz import process
+from fuzzywuzzy import process
 
 # In[ ]:
 
@@ -70,7 +69,7 @@ def generateSchoolData(num_schools=10000):
         return float(city_data['lat']), float(city_data['lng'])
 
     def fuzzy_extract_city(address, all_cities):
-        extracted_city, _, _ = process.extractOne(address, all_cities)
+        extracted_city, _ = process.extractOne(address, all_cities)
         return extracted_city
 
     def extract_city(address, cities_data, fallback_cities, state):
@@ -108,6 +107,13 @@ def generateSchoolData(num_schools=10000):
 
     schools['latitude'], schools['longitude'] = zip(*schools['city_location'].apply(lambda x: generate_random_coordinates(*x) if x is not None else (None, None)))
     schools.drop(columns=['city_location'], inplace=True)
+    
+    # List of school types
+    school_types = ['Primary School', 'Middle School', 'High School', 'Senior Secondary School']
+
+    # Generate a random type for each school
+    schools['type'] = [random.choice(school_types) for _ in range(len(schools))]
+
 
     # Convert the first letter of each word to uppercase
     schools['name'] = schools['name'].apply(lambda x: x.title() if x else None)
@@ -123,18 +129,28 @@ def generateSchoolData(num_schools=10000):
 # In[ ]:
 
 
-def generateNames(num_students):
+import numpy as np
+import pandas as pd
+
+def generateNamesAndGender(num_students):
     first_names = pd.read_csv("./Datasets/FirstNames.csv")
     last_names = pd.read_csv("./Datasets/indian_caste_data.csv")
-    # Generate 100000 random names by combining first and last names randomly
-    names = []
-    for i in range(num_students):
-        first_name = np.random.choice(first_names['first_name'])
-        last_name = np.random.choice(last_names['last_name'])
-        name = first_name + ' ' + last_name
-        names.append(name)
     
-    return names
+    # Generate random names by combining first and last names randomly
+    names_and_genders = []
+    for _ in range(num_students):
+        # randomly choose a row from the first_names DataFrame
+        random_row = first_names.sample()
+        first_name = random_row['first_name'].values[0]
+        gender = "Male" if random_row['Gender'].values[0] == 0 else "Female"
+        
+        last_name = np.random.choice(last_names['last_name'])
+        full_name = first_name + ' ' + last_name
+        
+        names_and_genders.append((full_name, gender))
+    
+    return names_and_genders
+
 
 
 # In[ ]:
@@ -289,28 +305,41 @@ def generateDOB(students_df, class_name):
 def generateClassData():
     # Load the CSV file with school data
     schools_df = pd.read_csv('school_data.csv')
-    # Create a list of class names
-    class_names = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
-
+    
     # Create a list to store class data
     class_data = []
 
     # Loop through each school in schools_df
     for i, row in schools_df.iterrows():
-        # Loop through each class name in class_names
-        for class_name in class_names:
-            # Create a dictionary with class data
-            class_dict = {
-                'name': class_name,
-                'school_id': row['id'],
-                'capacity': 50
-            }
-            # Append the class data to class_data list
-            class_data.append(class_dict)
+        school_type = row['type']
+        class_range = None
+        
+        # Determine the class range based on the school type
+        if school_type == 'Primary School':
+            class_range = range(1, 6)  # 1 to 5
+        elif school_type == 'Middle School':
+            class_range = range(1, 9)  # 1 to 8
+        elif school_type == 'High School':
+            class_range = range(1, 11)  # 1 to 10
+        elif school_type == 'Senior Secondary School':
+            class_range = range(1, 13)  # 1 to 12
+        
+        # Create class data for each class in the determined range
+        if class_range:
+            for class_num in class_range:
+                class_dict = {
+                    'name': str(class_num),
+                    'school_id': row['id'],
+                    'capacity': 50
+                }
+                class_data.append(class_dict)
+
     # Create a DataFrame with class data
     class_df = pd.DataFrame(class_data)
     
+    # Assuming you have a generateId function that takes the prefix and the DataFrame as arguments
     class_df["id"] = generateId("CL", class_df)
+    
     # Save the class DataFrame to a new CSV file
     class_df.to_csv('class_data.csv', index=False)
 
@@ -365,7 +394,7 @@ def generateSubjectData():
 
 def generateStudents():
     class_df = pd.read_csv("class_data.csv")
-    students_df = pd.DataFrame(columns=['name', 'fathers_name', 'date_of_birth', 'class_id', 'email', 'phone', 'address'])
+    students_df = pd.DataFrame(columns=['name', 'gender', 'fathers_name', 'date_of_birth', 'class_id', 'email', 'phone', 'address'])
     class_age_map = {
         '1': (5, 6),
         '2': (6, 7),
@@ -387,7 +416,8 @@ def generateStudents():
         num_students = random.randint(25, capacity)
 
         # Generate fake names and addresses for students
-        names = generateNames(num_students)
+        names_and_genders = generateNamesAndGender(num_students)
+        names, genders = zip(*names_and_genders)
         addresses = generateFakeAddress(num_students)
 
         # Generate fathers names based on kids names
@@ -404,6 +434,7 @@ def generateStudents():
         # Create a DataFrame for the students of this class
         students = pd.DataFrame({
             'name': names,
+            'gender': genders,
             'fathers_name': fathers_names,
             'date_of_birth': birth_dates,
             'class_id': class_id,

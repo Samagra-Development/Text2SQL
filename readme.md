@@ -40,6 +40,20 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+#### pygraphviz installation
+
+## Linux
+```bash
+sudo apt-get install libgraphviz-dev
+pip install --global-option=build_ext --global-option="-I/usr/include/graphviz" --global-option="-L/usr/lib/x86_64-linux-gnu/" --install-option="--library-path=/usr/lib/x86_64-linux-gnu/graphviz" pygraphviz
+```
+
+## Mac OS
+```bash
+sudo apt-get install libgraphviz-dev
+pip install --global-option=build_ext --global-option="-I/opt/homebrew/Cellar/graphviz/8.0.5/include/" --global-option="-L/opt/homebrew/Cellar/graphviz/8.0.5/lib/" pygraphviz
+```
+
 ### Running Tests
 
 ```bash
