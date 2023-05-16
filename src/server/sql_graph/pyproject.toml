@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "sql-graph"
+version = "0.1.0"
+description = ""
+authors = ["ChakshuGautam <chaks.gautam@gmail.com>"]
+readme = "README.md"
+packages = [{include = "sql_graph"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+networkx = "^3.1"
+matplotlib = "^3.7.1"
+pydot = "^1.4.2"
+sqlalchemy = "^2.0.11"
+testcontainers-postgres = "^0.0.1rc1"
+testcontainers-mysql = "^0.0.1rc1"
+cryptography = "^40.0.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
