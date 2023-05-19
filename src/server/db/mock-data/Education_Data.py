@@ -14,10 +14,9 @@ from faker import Faker
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
 from geopy.distance import great_circle
-from fuzzywuzzy import process
+import time
 
 # In[ ]:
-
 
 def generateId(prefix, df):
     # Load the CSV file with school names
@@ -38,8 +37,8 @@ def generateSchoolData(num_schools=10000):
     all_cities = cities_data["city_ascii"].str.upper().tolist()
 
     # Load CBSE and ICSE schools data
-    cbse_school = pd.read_csv("./Datasets/cbse_schools_data-master/basic/schools.csv")[["name", "state", "region", "address"]]
-    icse_school = pd.read_csv("./Datasets/cisce_schools_data-master/schools.csv")[["name", "state", "address"]]
+    cbse_school = pd.read_csv("./Datasets/cbse_schools_data-master/cbse_school_cleaned.csv")[["name", "state", "city", "address", "latitude", "longitude"]]
+    icse_school = pd.read_csv("./Datasets/cisce_schools_data-master/icse_school_cleaned.csv")[["name", "state", "city", "address", "latitude", "longitude"]]
 
     # Replace newline characters and extra commas in name and address columns
     cbse_school['name'] = cbse_school['name'].str.replace('\n', ' ')
@@ -57,45 +56,6 @@ def generateSchoolData(num_schools=10000):
     largest_cities = cities_data.groupby('admin_name')['population'].idxmax()
     fallback_cities = dict(zip(cities_data.loc[largest_cities, 'admin_name'], cities_data.loc[largest_cities, 'city_ascii']))
 
-    # Generate random latitude and longitude for each school
-    def generate_random_coordinates(lat, lon):
-        if lat is None or lon is None:
-            return None, None
-        return round(lat + random.uniform(-0.1, 0.1), 6), round(lon + random.uniform(-0.1, 0.1), 6)
-
-
-    def get_city_location(city_name, cities_data):
-        city_data = cities_data[cities_data["city_ascii"].str.upper() == city_name.upper()].iloc[0]
-        return float(city_data['lat']), float(city_data['lng'])
-
-    def fuzzy_extract_city(address, all_cities):
-        extracted_city, _ = process.extractOne(address, all_cities)
-        return extracted_city
-
-    def extract_city(address, cities_data, fallback_cities, state):
-        city_name = fuzzy_extract_city(address, all_cities)
-        if city_name not in all_cities:
-            fallback_city = fallback_cities.get(state.upper())
-            if fallback_city:
-                city_name = fallback_city.upper()
-
-        if city_name in all_cities:
-            city_location = get_city_location(city_name, cities_data)
-            return city_name, city_location
-
-        return None, None
-
-    cbse_school = cbse_school.rename(columns={'region': 'city'})
-
-
-    icse_school['city'], icse_school['city_location'] = zip(*icse_school.apply(lambda x: extract_city(x['address'], cities_data, fallback_cities, x['state']), axis=1))
-    icse_school = icse_school.applymap(lambda s: s.upper() if type(s) == str else s)
-
-    cbse_school['city_location'] = cbse_school['city'].apply(lambda x: get_city_location(x, cities_data) if x in all_cities else None)
-    cbse_school['latitude'], cbse_school['longitude'] = zip(*cbse_school['city_location'].apply(lambda x: generate_random_coordinates(*x) if x is not None else (None, None)))
-    cbse_school['city'] = cbse_school['city'].str.upper()
-    #cbse_school.drop(columns=['city_location'], inplace=True)
-
     # Combine CBSE and ICSE schools data
     cbse_school.reset_index(drop=True, inplace=True)
     icse_school.reset_index(drop=True, inplace=True)
@@ -103,10 +63,6 @@ def generateSchoolData(num_schools=10000):
 
     if num_schools <= len(schools):
         schools = schools.sample(n=num_schools)
-
-
-    schools['latitude'], schools['longitude'] = zip(*schools['city_location'].apply(lambda x: generate_random_coordinates(*x) if x is not None else (None, None)))
-    schools.drop(columns=['city_location'], inplace=True)
     
     # List of school types
     school_types = ['Primary School', 'Middle School', 'High School', 'Senior Secondary School']
@@ -588,7 +544,7 @@ def generate_mid_day_meal_data():
 
 # In[ ]:
 
-
+startTime = time.time()
 generateSchoolData(50)
 generateClassData()
 generateSubjectData()
@@ -596,7 +552,8 @@ generateStudents()
 generateMarksData()
 generateAttendanceData()
 generate_mid_day_meal_data()
-
+endTime = time.time()
+print(endTime - startTime)
 
 # In[ ]:
 
