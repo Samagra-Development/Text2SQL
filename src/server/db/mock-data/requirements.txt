@@ -6,3 +6,4 @@ sqlalchemy
 pymysql
 rapidfuzz
 python-Levenshtein
+fuzzywuzzy
