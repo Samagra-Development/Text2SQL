@@ -1,0 +1,19 @@
+FROM node:16
+ 
+WORKDIR /usr/src/app
+ 
+# Copy root package.json and lockfile
+COPY package.json ./
+COPY yarn.lock ./
+ 
+# Copy the web package.json
+COPY apps/web/package.json ./apps/web/package.json
+ 
+RUN yarn install
+ 
+# Copy app source
+COPY . .
+ 
+EXPOSE 8080
+ 
+CMD [ "yarn run dev"]

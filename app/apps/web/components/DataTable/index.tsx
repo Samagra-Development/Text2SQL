@@ -13,7 +13,7 @@ const DataTable = (props) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {data?.map((el, idx) => <tr>
+                    {data?.map((el, idx) => <tr key={`${idx}_${idx*idx}`}>
                         {Object.keys(el)?.map((dataKey, i) => <td key={dataKey}>{el[dataKey]}</td>)}
                     </tr>)}
                 </tbody>

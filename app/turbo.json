@@ -1,6 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env.*local"],
+  "globalEnv": ["NEXT_PUBLIC_DB", "NEXT_PUBLIC_SCHEMA", "NEXT_PUBLIC_SCHEMA_ID"],
   "pipeline": {
     "build": {
       "outputs": [".next/**", "!.next/cache/**"]
