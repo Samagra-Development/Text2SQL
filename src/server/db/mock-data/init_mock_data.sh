@@ -25,13 +25,9 @@ RESPONSE=$(curl --location "${API_ENDPOINT}" \
 # Extract the schema ID from the response
 SCHEMA_ID=$(echo "${RESPONSE}" | jq -r '.result.data.schema_id')
 
-echo "Schema ID: ${SCHEMA_ID}"
+echo "Schema ID: ${SCHEMA_ID}" > schema_id.txt
 
-$(python3 -m venv venv)
+pip install -r requirements.txt
 
-$(source venv/bin/activate)
-
-$(pip install -r requirements.txt)
-
-$(python3 Education_Data.py)
-$(python3 dbpush.py ${SCHEMA_ID})
+python3 Education_Data.py
+python3 dbpush.py ${SCHEMA_ID}

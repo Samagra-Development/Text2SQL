@@ -4,23 +4,30 @@
 1. Once it is open in Gitpod, all the services required by the project will be up and running as a docker container.
 2. Open .env file.
 3. Update the **OPENAI_API_KEY** with your own OpenAI api key.
-4. Now perform following steps to install the required dependencies
+4. Go to ports and make 8084 as public.
+5. Now perform following steps to install the required dependencies
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+sudo sh ./setup.sh
 ```
-5. Start the server by executing the following command
+6. Start the server by executing the following command
 ```bash
-python3 src/server/app.py
+sudo python3 src/server/app.py
 ```
-6. Go to ports and make the 5078 as public.
-6. Once a schema is onboarded you can test a prompt using the following 
+7. Go to ports and make the 5078 as public and copy the address.
+8. Open src/server/db/mock-data/init_mock_data.sh and replace the API_ENDPOINT with the address you copied in previous step.
+9. If you want a smaller dataset then go to src/server/db/mock-data/Education_Data.py and change generateSchoolData(50) to the desired number of schools.
+10. Execute the following command to push dummy education data. This will take few minutes to complete
+```bash
+cd src/server/db/mock-data/
+sudo sh ./init_mock_data.sh
+```
+11. Open src/server/db/mock-data/schema_id.txt and copy the schema_id.
+12. Once a schema is onboarded you can test a prompt using the following 
 ```bash
 curl -X POST \
   -u test:test \
   -H "Content-Type: application/json" \
   -H "Cookie: csrftoken=SWTHvaNeh4g3KImyRotjdDcMYuiW0dw4ctce3LXEkRWHJx71t7nKMLCk70wSdSSB" \
-  -d '{"prompt": "<Enter your prompt>", "schema_id": "<Enter your schema id Schema_id>"}' \
-  http://localhost:5078/prompt
+  -d '{"prompt": "<Enter your prompt>", "schema_id": "<Paste your schema id>"}' \
+  http://localhost:5078/prompt/v3
 ```
