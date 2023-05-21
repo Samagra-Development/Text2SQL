@@ -94,3 +94,8 @@ pip install --global-option=build_ext --global-option="-I/opt/homebrew/Cellar/gr
 
 # Contribution
 Check our [QuickStart guide](./contribution.md) if you want to contribute to this project.
+
+You can watch this video which will help you in setting up Gitpod for the project.
+
+## Gitpod Setup Tutorial
+[<img src="https://i.ytimg.com/vi/JaM_m_VMWaM/maxresdefault.jpg" width="50%">](https://www.youtube.com/watch?v=JaM_m_VMWaM "Text2SQL Gitpod Setup Tutorial")
