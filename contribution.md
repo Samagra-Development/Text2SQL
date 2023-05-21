@@ -1,7 +1,7 @@
 # QuickStart
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/ChakshuGautam/Text2SQL)
 
-Gitpod Setup Tutorial
+## Gitpod Setup Tutorial
 [<img src="https://i.ytimg.com/vi/JaM_m_VMWaM/maxresdefault.jpg" width="50%">](https://www.youtube.com/watch?v=JaM_m_VMWaM "Text2SQL Gitpod Setup Tutorial")
 
 1. Once it is open in Gitpod, all the services required by the project will be up and running as a docker container.
