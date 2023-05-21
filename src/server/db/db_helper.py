@@ -110,7 +110,7 @@ class mysql_database(Database):
                     except mysql.connector.Error as err:
                         logging.error(f"Error creating schema in database {db_name}: {err}")
                 else:
-                    logging.info("comm", command)
+                    logging.info("Command : %s", command)
                     try:
                         cursor.execute(command)
                     except mysql.connector.Error as err:
@@ -297,7 +297,7 @@ class postgresql_database(Database):
                         logging.error("Duplicate Schema")
                         continue
                 else:
-                    logging.info("comm", command)
+                    logging.info("Command : %s", command)
                     try:
                         cursor.execute(command)
                     except psycopg2.errors.SyntaxError:

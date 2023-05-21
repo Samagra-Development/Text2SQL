@@ -32,6 +32,10 @@ load_dotenv(dotenv_path=f"{ROOT_FOLDER}/.env")
 app = Quart(__name__)
 # app = cors(app)
 
+# Check if the logs directory exists, and if not, create it
+log_dir = './src/server/logs/'
+os.makedirs(log_dir, exist_ok=True)
+
 # Set up a formatter for the log messages
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
@@ -148,7 +152,7 @@ async def prompt():
             res_sub_query, err_msg_sub_query = await db.get_table_info(schema_id, table)
             table_list.append(res_sub_query)
         query_prompt = SQL_QUERY_PROMPT % (schema_type, prompt, table_list)
-        logging.info("prompt ", query_prompt)
+        logging.info("Prompt : %s", str(query_prompt))
         chat_gpt_query_response = await chatGPT(query_prompt, app)
         query = chat_gpt_query_response.replace('\n', ' ').replace("'''", '').replace('```', '')
         validate_flag, data = await db.validate_sql(schema_id, query)
@@ -197,7 +201,7 @@ async def promptv3():
         Sub_G = get_sub_graph(G, chat_gpt_response['subject'], 1)
         sub_schema = graph_to_sql(Sub_G)
         query_prompt = VERSION2_PROMPT % (schema_type, sub_schema, prompt)
-        logging.info("prompt ", query_prompt)
+        logging.info("prompt: %s", query_prompt)
         chat_gpt_query_response = await chatGPT(query_prompt, app) 
         query = chat_gpt_query_response.split('-')[1].replace('\n', ' ').replace("'''", '').replace('```', '').replace("\\", "")
         validate_flag, data = await db.validate_sql(schema_id, query)

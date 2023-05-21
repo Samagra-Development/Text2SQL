@@ -14,7 +14,7 @@ sudo sh ./setup.sh
 sudo python3 src/server/app.py
 ```
 7. Go to ports and make the 5078 as public and copy the address.
-8. Open src/server/db/mock-data/init_mock_data.sh and replace the API_ENDPOINT with the address you copied in previous step.
+8. Open src/server/db/mock-data/init_mock_data.sh and replace the API_ENDPOINT with the address you copied in previous step. Remember to have **/onboard** in the url.
 9. If you want a smaller dataset then go to src/server/db/mock-data/Education_Data.py and change generateSchoolData(50) to the desired number of schools.
 10. Execute the following command to push dummy education data. This will take few minutes to complete
 ```bash
@@ -29,5 +29,5 @@ curl -X POST \
   -H "Content-Type: application/json" \
   -H "Cookie: csrftoken=SWTHvaNeh4g3KImyRotjdDcMYuiW0dw4ctce3LXEkRWHJx71t7nKMLCk70wSdSSB" \
   -d '{"prompt": "<Enter your prompt>", "schema_id": "<Paste your schema id>"}' \
-  http://localhost:5078/prompt/v3
+  https://<Paste the same url as of step 8>/prompt/v3
 ```
