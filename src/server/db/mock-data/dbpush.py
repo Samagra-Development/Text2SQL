@@ -6,7 +6,7 @@ database = sys.argv[1]
 print(database)
 
 # Connect to the MySQL database
-engine = create_engine(f'mysql+pymysql://root:password@127.0.0.1:3306/{database}')
+engine = create_engine(f'mysql+pymysql://root:password@localhost:3306/{database}')
 
 files_table_config = {
     "school_data.csv" : "school",

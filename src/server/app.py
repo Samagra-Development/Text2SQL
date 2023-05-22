@@ -73,7 +73,7 @@ def read_file(file_path):
             return content
     except Exception as e:
         logging.error("ERROR: {e}")
-        print(f"ERROR: {e}, {traceback.print_exc()}")
+        print(f"ERROR: {e}, {e.print_exc()}")
     return ""
 
 
@@ -100,16 +100,6 @@ def auth_required(func):
             abort(401)
 
     return wrapper
-
-def save_uploaded_file(uploaded_file, target_folder, new_filename):
-    if not os.path.exists(target_folder):
-        os.makedirs(target_folder)
-
-    target_file_path = os.path.join(target_folder, secure_filename(new_filename))
-    with open(target_file_path, 'wb') as f:
-        f.write(uploaded_file)
-
-    return target_file_path
 
 def read_file(file_path):
     try:
