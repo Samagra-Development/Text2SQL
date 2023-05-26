@@ -22,7 +22,7 @@ export const getSchemaFromHasura = async () => {
 
 export const getPromptResponse = async (prompt, schemaId) => {
     try {
-        const res = await axios.post('https://api.t2s.samagra.io/prompt',
+        const res = await axios.post('https://api.t2s.samagra.io/prompt/v3',
             {
                 prompt,
                 schema_id: schemaId
