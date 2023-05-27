@@ -59,7 +59,7 @@ const CommonInterface = () => {
     const handleSchemaSelection = (sc, db, data) => {
         setSchema(sc)
         console.log("d->", sc, db, data)
-        setPrompts([...data?.[db]?.details?.[sc]?.samplePrompts])
+        setPrompts([...data?.[db].details?.[sc]?.samplePrompts])
 
     }
 
