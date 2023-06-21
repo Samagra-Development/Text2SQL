@@ -9,6 +9,7 @@ import re
 from uuid import uuid4
 import logging
 from dotenv import load_dotenv
+import sqlparse
 
 from testcontainers.postgres import PostgresContainer
 
@@ -92,10 +93,9 @@ class mysql_database(Database):
             # con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
             cursor = con.cursor()
             # Split the SQL dump into separate statements
-            schema = schema.decode('UTF-8')
             # Remove comments from the SQL dump
-            schema = re.sub(r'(--[^\n]*|/\*.*?\*/)', '', schema)
-            sql_commands = schema.split(';')
+            schema = sqlparse.format(schema, strip_comments=True)
+            sql_commands = sqlparse.split(schema)
 
             # Execute each statement
             for command in sql_commands:
@@ -278,10 +278,9 @@ class postgresql_database(Database):
             # con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
             cursor = con.cursor()
             # Split the SQL dump into separate statements
-            schema = schema.decode('UTF-8')
             # Remove comments from the SQL dump
-            schema = re.sub(r'(--[^\n]*|/\*.*?\*/)', '', schema)
-            sql_commands = schema.split(';')
+            schema = sqlparse.format(schema, strip_comments=True)
+            sql_commands = sqlparse.split(schema)
 
             # Execute each statement
             for command in sql_commands:
