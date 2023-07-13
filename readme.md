@@ -74,8 +74,10 @@ This will be required for sql_graph.
 
 #### Linux
 ```bash
+sudo apt update
 sudo apt-get install libgraphviz-dev
-pip install --global-option=build_ext --global-option="-I/usr/include/graphviz" --global-option="-L/usr/lib/x86_64-linux-gnu/" --install-option="--library-path=/usr/lib/x86_64-linux-gnu/graphviz" pygraphviz
+sudo apt install pkg-config graphviz-dev -y
+pip install pygraphviz
 ```
 
 #### Mac OS
