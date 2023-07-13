@@ -1,4 +1,5 @@
 # Text2SQL
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/Samagra-Development/Text2SQL)
 
 ## Introduction
 This tool converts natural language queries into SQL commands and fetches data from a configured database. It's an intuitive way for individuals without SQL knowledge to interact with databases, or for experts to streamline and automate their work.
