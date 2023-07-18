@@ -1,5 +1,6 @@
 sh ./src/server/migrations/import_metadata.sh
 
+sudo apt-get update
 sudo pip install -r requirements.txt
 
 sudo apt-get install python3-dev libgraphviz-dev 
