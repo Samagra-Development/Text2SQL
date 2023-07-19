@@ -219,12 +219,14 @@ class mysql_database(Database):
                 database=str(db_name)
             )
             cur = con.cursor()
+            cur.execute("START TRANSACTION READ ONLY")
             cur.execute(query)
             metadata = []
             rows = cur.fetchall()
             for row in rows:
                 metadata_dict = dict(zip(cur.column_names, row))
                 metadata.append(metadata_dict)
+            con.commit()
             con.close()
             cur.close()
             return True, metadata
@@ -421,6 +423,7 @@ class postgresql_database(Database):
                 port=os.getenv('POSTGRES_QUERY_PORT'),
                 host=os.getenv('POSTGRES_QUERY_HOST'),
             )
+            con.set_session(readonly=True)
             cur = con.cursor()
             cur.execute(query)
             rows = cur.fetchall()
