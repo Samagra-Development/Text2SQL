@@ -1,4 +1,5 @@
 # Text2SQL
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/Samagra-Development/Text2SQL)
 
 ## Introduction
 This tool converts natural language queries into SQL commands and fetches data from a configured database. It's an intuitive way for individuals without SQL knowledge to interact with databases, or for experts to streamline and automate their work.
@@ -73,8 +74,10 @@ This will be required for sql_graph.
 
 #### Linux
 ```bash
+sudo apt update
 sudo apt-get install libgraphviz-dev
-pip install --global-option=build_ext --global-option="-I/usr/include/graphviz" --global-option="-L/usr/lib/x86_64-linux-gnu/" --install-option="--library-path=/usr/lib/x86_64-linux-gnu/graphviz" pygraphviz
+sudo apt install pkg-config graphviz-dev -y
+pip install pygraphviz
 ```
 
 #### Mac OS
