@@ -10,22 +10,18 @@
 4. Go to ports and make 8084 as public.
 5. Now perform following steps to install the required dependencies
 ```bash
-sudo sh ./setup.sh
+sh ./setup.sh
 ```
-6. Start the server by executing the following command
-```bash
-sudo python3 src/server/app.py
-```
-7. Go to ports and make the 5078 as public and copy the address.
-8. Open src/server/db/mock-data/init_mock_data.sh and replace the API_ENDPOINT with the address you copied in previous step. Remember to have **/onboard** in the url.
-9. If you want a smaller dataset then go to src/server/db/mock-data/Education_Data.py and change generateSchoolData(50) to the desired number of schools.
-10. Execute the following command to push dummy education data. This will take few minutes to complete
+6. Go to ports and make the 5078 as public and copy the address.
+7. Open src/server/db/mock-data/init_mock_data.sh and replace the API_ENDPOINT with the address you copied in previous step. Remember to have **/onboard** in the url.
+8. If you want a smaller dataset then go to src/server/db/mock-data/Education_Data.py and change generateSchoolData(50) to the desired number of schools.
+9. Execute the following command to push dummy education data. This will take few minutes to complete
 ```bash
 cd src/server/db/mock-data/
 sudo sh ./init_mock_data.sh
 ```
-11. Open src/server/db/mock-data/schema_id.txt and copy the schema_id.
-12. Once a schema is onboarded you can test a prompt using the following 
+10. Open src/server/db/mock-data/schema_id.txt and copy the schema_id.
+11. Once a schema is onboarded you can test a prompt using the following 
 ```bash
 curl -X POST \
   -u test:test \
