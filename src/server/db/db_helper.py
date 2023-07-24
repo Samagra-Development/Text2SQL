@@ -9,6 +9,7 @@ import re
 from uuid import uuid4
 import logging
 from dotenv import load_dotenv
+import sqlite3
 
 from testcontainers.postgres import PostgresContainer
 
@@ -436,6 +437,127 @@ class postgresql_database(Database):
             return False, str(e)
             # return False
 
+class sqlite_database(Database):
+    async def get_connection(self):
+        try:
+            con = sqlite3.connect("temp.db")
+            cursor = con.cursor()
+            return cursor, con
+        except Exception as e:
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
+            raise Exception("Failed to connect to db")
+
+    async def create_database_and_schema(self, db_name):
+        try:
+            con = sqlite3.connect(f'{db_name}.db')
+            cursor = con.cursor()
+            con.commit()
+            return True, ""
+        except Exception as e:
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
+            return False, str(e)
+    
+    async def create_schema_in_db(self, db_name, schema):
+        try:
+            con = sqlite3.connect(f'{db_name}.db')
+            cursor = con.cursor()
+            # Split the SQL dump into separate statements
+            schema = schema.decode('UTF-8')
+            # Remove comments from the SQL dump
+            schema = re.sub(r'(--[^\n]*|/\*.*?\*/)', '', schema)
+            sql_commands = schema.split(';')
+
+            # Execute each statement
+            for command in sql_commands:
+                # Skip empty statements
+                if not command.strip():
+                    continue
+
+                try:
+                    cursor.execute(command)
+                except sqlite3.Error as err:
+                    logging.error(f"Error creating schema in database {db_name}: {err}")
+                    cursor.close()
+                    con.close()
+                    return False, str(err)
+            con.commit()
+            return True, ""
+        except Exception as e:
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
+            return False, str(e)
+
+    async def get_tables_from_schema_id(self, schema_id):
+        try:
+            con = sqlite3.connect(f'{db_name}.db')
+            cursor = con.cursor()
+            cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table';")
+            table_meta = cursor.fetchall()
+            table_list = [x[0] for x in table_meta]
+            return table_list, ""
+        except Exception as e:
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
+            return None, str(e)
+    
+    async def get_table_info(self, db_name, table_name):
+        try:
+            con = sqlite3.connect(f'{db_name}.db')
+            cur = con.cursor()
+            cur.execute(f"PRAGMA table_info({table_name});")
+            columns = cur.fetchall()
+            cur.execute(f"PRAGMA foreign_key_list({table_name});")
+            related_tables = cur.fetchall()
+            table_info = {table_name: {'columns': columns, 'references': {}}}
+            for row in related_tables:
+                related_table_name = row[2]
+                related_table_column_name = row[3]
+                if 'references' not in table_info:
+                    table_info['references'] = {}
+                if related_table_name not in table_info['references']:
+                    cur.execute(f"PRAGMA table_info({related_table_name});")
+                    related_table_columns = cur.fetchall()
+                    table_info['references'][related_table_name] = {'columns': related_table_columns, 'referenced_by': []}
+                table_info['references'][related_table_name]['referenced_by'].append(
+                    {'table_name': table_name, 'column_name': related_table_column_name})
+            cur.close()
+            con.close()
+            return table_info, ""
+        except Exception as e:
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
+            return None, str(e)
+
+    async def get_create_table_statements(self, schema, table_name):
+        table_queries = set()
+        # Get create table statement for the given table name
+        pattern = f'CREATE TABLE {table_name}.*?;'
+        match = re.search(pattern, schema, re.DOTALL)
+        if match:
+            table_queries.add(match.group())
+            # Get foreign key related tables
+            pattern = f'FOREIGN KEY .*?REFERENCES (\w+).*?;'
+            fk_matches = re.findall(pattern, schema)
+            for fk_match in fk_matches:
+                if fk_match not in table_queries:
+                    table_queries.add(f'CREATE TABLE {fk_match}.*?;')
+        else:
+            return None
+        return table_queries
+    
+    async def validate_sql(self, db_name, query):
+        try:
+            con = sqlite3.connect(f'{db_name}.db')
+            cur = con.cursor()
+            cur.execute(query)
+            metadata = []
+            rows = cur.fetchall()
+            for row in rows:
+                metadata_dict = dict(zip([d[0] for d in cur.description], row))
+                metadata.append(metadata_dict)
+            cur.close()
+            con.close()
+            return True, metadata
+        except Exception as e:
+            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
+            return False, str(e)
 
 class database_factory:
     def get_database_connection(self, schema_type):
@@ -444,4 +566,7 @@ class database_factory:
             return db
         elif schema_type == 'mysql':
             db = mysql_database()
+            return db
+        elif schema_type == 'sqlite':
+            db = sqlite_database()
             return db
