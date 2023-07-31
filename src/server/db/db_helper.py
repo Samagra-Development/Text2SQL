@@ -472,7 +472,7 @@ class sqlite_database(Database):
             # Split the SQL dump into separate statements
             schema = schema.decode('UTF-8')
             # Remove comments from the SQL dump
-            schema = re.sub(r'(--[^\n]*|/\*.*?\*/)', '', schema)
+            schema = re.sub(r'(--[^\n]*|/\*.*?\*/|(?:[^;\'"]|\'[^\']*\'|"[^"]*")*;)', '', schema)
             sql_commands = schema.split(';')
 
             # Execute each statement
