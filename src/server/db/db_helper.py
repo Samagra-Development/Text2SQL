@@ -450,14 +450,7 @@ class sqlite_database(Database):
             os.makedirs(self.sqlite_db_folder)
 
     async def get_connection(self):
-        try:
-            db_file_path = os.path.join(self.sqlite_db_folder, "temp.db")
-            con = sqlite3.connect(db_file_path)
-            cursor = con.cursor()
-            return cursor, con
-        except Exception as e:
-            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
-            raise Exception("Failed to connect to db")
+        pass
 
     async def create_database_and_schema(self, db_name):
         try:
