@@ -495,7 +495,7 @@ class sqlite_database(Database):
 
     async def get_tables_from_schema_id(self, schema_id):
         try:
-            db_file_path = os.path.join(self.sqlite_db_folder, f'{db_name}.db')
+            db_file_path = os.path.join(self.sqlite_db_folder, f'{schema_id}.db')
             con = sqlite3.connect(db_file_path)
             cursor = con.cursor()
             cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table';")
