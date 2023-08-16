@@ -439,13 +439,19 @@ class postgresql_database(Database):
 
 class sqlite_database(Database):
     def __init__(self):
-        self.temp_db_folder = "temporary_db"
-        if not os.path.exists(self.temp_db_folder):
-            os.makedirs(self.temp_db_folder)
+        root_folder = "files"
+        db_folder = "sqlite_db"
+        self.sqlite_db_folder = os.path.join(root_folder, db_folder)
+
+        if not os.path.exists(root_folder):
+            os.makedirs(root_folder)
+
+        if not os.path.exists(self.sqlite_db_folder):
+            os.makedirs(self.sqlite_db_folder)
 
     async def get_connection(self):
         try:
-            db_file_path = os.path.join(self.temp_db_folder, "temp.db")
+            db_file_path = os.path.join(self.sqlite_db_folder, "temp.db")
             con = sqlite3.connect(db_file_path)
             cursor = con.cursor()
             return cursor, con
@@ -455,7 +461,7 @@ class sqlite_database(Database):
 
     async def create_database_and_schema(self, db_name):
         try:
-            db_file_path = os.path.join(self.temp_db_folder, f'{db_name}.db')
+            db_file_path = os.path.join(self.sqlite_db_folder, f'{db_name}.db')
             con = sqlite3.connect(db_file_path)
             cursor = con.cursor()
             con.commit()
@@ -466,7 +472,7 @@ class sqlite_database(Database):
     
     async def create_schema_in_db(self, db_name, schema):
         try:
-            db_file_path = os.path.join(self.temp_db_folder, f'{db_name}.db')
+            db_file_path = os.path.join(self.sqlite_db_folder, f'{db_name}.db')
             con = sqlite3.connect(db_file_path)
             cursor = con.cursor()
             # Split the SQL dump into separate statements
@@ -496,7 +502,7 @@ class sqlite_database(Database):
 
     async def get_tables_from_schema_id(self, schema_id):
         try:
-            db_file_path = os.path.join(self.temp_db_folder, f'{db_name}.db')
+            db_file_path = os.path.join(self.sqlite_db_folder, f'{db_name}.db')
             con = sqlite3.connect(db_file_path)
             cursor = con.cursor()
             cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table';")
@@ -509,7 +515,7 @@ class sqlite_database(Database):
     
     async def get_table_info(self, db_name, table_name):
         try:
-            db_file_path = os.path.join(self.temp_db_folder, f'{db_name}.db')
+            db_file_path = os.path.join(self.sqlite_db_folder, f'{db_name}.db')
             con = sqlite3.connect(db_file_path)
             cur = con.cursor()
             cur.execute(f"PRAGMA table_info({table_name});")
@@ -554,7 +560,7 @@ class sqlite_database(Database):
     
     async def validate_sql(self, db_name, query):
         try:
-            db_file_path = os.path.join(self.temp_db_folder, f'{db_name}.db')
+            db_file_path = os.path.join(self.sqlite_db_folder, f'{db_name}.db')
             con = sqlite3.connect(db_file_path)
             cur = con.cursor()
             cur.execute(query)
