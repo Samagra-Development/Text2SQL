@@ -438,18 +438,24 @@ class postgresql_database(Database):
             # return False
 
 class sqlite_database(Database):
+    def __init__(self):
+        root_folder = "files"
+        db_folder = "sqlite_db"
+        self.sqlite_db_folder = os.path.join(root_folder, db_folder)
+
+        if not os.path.exists(root_folder):
+            os.makedirs(root_folder)
+
+        if not os.path.exists(self.sqlite_db_folder):
+            os.makedirs(self.sqlite_db_folder)
+
     async def get_connection(self):
-        try:
-            con = sqlite3.connect("temp.db")
-            cursor = con.cursor()
-            return cursor, con
-        except Exception as e:
-            logging.error(f"ERROR: {e}, {traceback.print_exc()}")
-            raise Exception("Failed to connect to db")
+        pass
 
     async def create_database_and_schema(self, db_name):
         try:
-            con = sqlite3.connect(f'{db_name}.db')
+            db_file_path = os.path.join(self.sqlite_db_folder, f'{db_name}.db')
+            con = sqlite3.connect(db_file_path)
             cursor = con.cursor()
             con.commit()
             return True, ""
@@ -459,12 +465,13 @@ class sqlite_database(Database):
     
     async def create_schema_in_db(self, db_name, schema):
         try:
-            con = sqlite3.connect(f'{db_name}.db')
+            db_file_path = os.path.join(self.sqlite_db_folder, f'{db_name}.db')
+            con = sqlite3.connect(db_file_path)
             cursor = con.cursor()
             # Split the SQL dump into separate statements
             schema = schema.decode('UTF-8')
             # Remove comments from the SQL dump
-            schema = re.sub(r'(--[^\n]*|/\*.*?\*/)', '', schema)
+            # schema = re.sub(r'(--[^\n]*|/\*.*?\*/|(?:[^;\'"]|\'[^\']*\'|"[^"]*")*;)', '', schema)
             sql_commands = schema.split(';')
 
             # Execute each statement
@@ -488,7 +495,8 @@ class sqlite_database(Database):
 
     async def get_tables_from_schema_id(self, schema_id):
         try:
-            con = sqlite3.connect(f'{db_name}.db')
+            db_file_path = os.path.join(self.sqlite_db_folder, f'{schema_id}.db')
+            con = sqlite3.connect(db_file_path)
             cursor = con.cursor()
             cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table';")
             table_meta = cursor.fetchall()
@@ -500,7 +508,8 @@ class sqlite_database(Database):
     
     async def get_table_info(self, db_name, table_name):
         try:
-            con = sqlite3.connect(f'{db_name}.db')
+            db_file_path = os.path.join(self.sqlite_db_folder, f'{db_name}.db')
+            con = sqlite3.connect(db_file_path)
             cur = con.cursor()
             cur.execute(f"PRAGMA table_info({table_name});")
             columns = cur.fetchall()
@@ -544,7 +553,8 @@ class sqlite_database(Database):
     
     async def validate_sql(self, db_name, query):
         try:
-            con = sqlite3.connect(f'{db_name}.db')
+            db_file_path = os.path.join(self.sqlite_db_folder, f'{db_name}.db')
+            con = sqlite3.connect(db_file_path)
             cur = con.cursor()
             cur.execute(query)
             metadata = []

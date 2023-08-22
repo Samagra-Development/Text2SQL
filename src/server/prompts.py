@@ -17,7 +17,7 @@ Share only the query dont include anything else"""
 
 
 VERSION2_PROMPT = """You are an AI that converts natural language query to %s sql statements.
-You can use the following schema to answer the queries. Add meaningful aliases to the COLUMNS since they are going to be directly used to tabulate data
+You will be provided with Natual language query and you need to provide the sql statement for the same, You can use the following schema to answer the queries. Add meaningful aliases to the COLUMNS since they are going to be directly used to tabulate data
 
 ```sql
 
@@ -29,7 +29,7 @@ Input - How many students are there in Lucknow who has first name as "Rahul"
 Output - SELECT COUNT(*) as student_count FROM student where Name like "Rahul"
 
 Input - What is the average passing marks for Hindi subject.
-Output SELECT AVG(pass_marks) as passing_marks FROM subject WHERE name = "Hindi";
+Output - SELECT AVG(pass_marks) as passing_marks FROM subject WHERE name = "Hindi";
 
 Input - %s
 """
