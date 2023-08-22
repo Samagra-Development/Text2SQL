@@ -48,7 +48,7 @@ class Database(abc.ABC):
 
 
 class mysql_database(Database):
-    async def get_connection():
+    async def get_connection(self):
         try:
             con = mysql.connector.connect(user='root',
                 password=os.getenv('MYSQL_ROOT_PASSWORD'),
@@ -56,21 +56,15 @@ class mysql_database(Database):
                 port=os.getenv('MYSQL_PORT'))
             con.autocommit = True
             cursor = con.cursor()
-            return cursor, con
+            return con, cursor
         except Exception as e:
             logging.error(f"ERROR: {e}, {traceback.print_exc()}")
             raise Exception("Failed to connect to db")
 
     async def create_database_and_schema(self, db_name):
         try:
-            con = mysql.connector.connect(
-                user='root',
-                password=os.getenv('MYSQL_ROOT_PASSWORD'),
-                host=os.getenv('MYSQL_HOST'),
-                port=os.getenv('MYSQL_PORT')
-            )
+            con, cursor = await self.get_connection()
             #con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-            cursor = con.cursor()
             query = f'create database `{db_name}`;'
             cursor.execute(query)
             cursor.close()
@@ -82,16 +76,7 @@ class mysql_database(Database):
     
     async def create_schema_in_db(self, db_name, schema):
         try:
-            con = mysql.connector.connect(
-                user='root',
-                password=os.getenv('MYSQL_ROOT_PASSWORD'),
-                port=os.getenv('MYSQL_PORT'),
-                host=os.getenv('MYSQL_HOST'),
-                database=db_name
-            )
-            con.autocommit = True
-            # con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-            cursor = con.cursor()
+            con, cursor = await self.get_connection()
             # Split the SQL dump into separate statements
             schema = schema.decode('UTF-8')
             # Remove comments from the SQL dump
@@ -118,7 +103,7 @@ class mysql_database(Database):
                         logging.error(f"Error creating schema in database {db_name}: {err}")
                         cursor.close()
                         con.close()
-                        return False, str(e)
+                        return False, str(err)
             cursor.close()
             con.close()
             return True, ""
@@ -128,15 +113,7 @@ class mysql_database(Database):
 
     async def get_tables_from_schema_id(self, schema_id):
         try:
-            con = mysql.connector.connect(
-                user='root',
-                password=os.getenv('MYSQL_ROOT_PASSWORD'),
-                port=os.getenv('MYSQL_PORT'),
-                host=os.getenv('MYSQL_HOST'),
-                database=schema_id
-            )
-            con.autocommit = True
-            cursor = con.cursor()
+            con, cursor = await self.get_connection()
             # cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema='public'")
             cursor.execute(f"SELECT table_name AS table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema='{schema_id}';")
             table_meta = cursor.fetchall()
@@ -151,21 +128,12 @@ class mysql_database(Database):
     
     async def get_table_info(self, db_name, table_name):
         try:
-            con = mysql.connector.connect(
-                user='root',
-                password=os.getenv('MYSQL_ROOT_PASSWORD'),
-                port=os.getenv('MYSQL_PORT'),
-                host=os.getenv('MYSQL_HOST'),
-                database=db_name
-            )
-            # table_schema = table_name.split('.')[0]
-            table_second_name = table_name
-            cur = con.cursor()
-            cur.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name='{table_second_name}' and table_schema = '{db_name}';")
-            columns = cur.fetchall()
-            cur.execute(
+            con, cursor = await self.get_connection()
+            cursor.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name='{table_second_name}' and table_schema = '{db_name}';")
+            columns = cursor.fetchall()
+            cursor.execute(
                 f"SELECT TABLE_NAME,COLUMN_NAME,TABLE_SCHEMA,CONSTRAINT_NAME, REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME = '{table_second_name}' and REFERENCED_TABLE_SCHEMA = '{db_name}';")
-            related_tables = cur.fetchall()
+            related_tables = cursor.fetchall()
             table_info = {table_name: {'columns': columns, 'references': {}}}
             for row in related_tables:
                 related_table_name = row[2] + '.' + row[0]
@@ -173,13 +141,13 @@ class mysql_database(Database):
                 if 'references' not in table_info:
                     table_info['references'] = {}
                 if related_table_name not in table_info['references']:
-                    cur.execute(
+                    cursor.execute(
                         f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name='{related_table_name}';")
-                    related_table_columns = cur.fetchall()
+                    related_table_columns = cursor.fetchall()
                     table_info['references'][related_table_name] = {'columns': related_table_columns, 'referenced_by': []}
                 table_info['references'][related_table_name]['referenced_by'].append(
                     {'table_name': table_name, 'column_name': related_table_column_name})
-            cur.close()
+            cursor.close()
             con.close()
             return table_info, ""
         except Exception as e:
@@ -212,22 +180,15 @@ class mysql_database(Database):
     
     async def validate_sql(self, db_name, query):
         try:
-            con = mysql.connector.connect(
-                user='root',
-                password=os.getenv('MYSQL_ROOT_PASSWORD'),
-                port=os.getenv('MYSQL_PORT'),
-                host=os.getenv('MYSQL_HOST'),
-                database=str(db_name)
-            )
-            cur = con.cursor()
-            cur.execute(query)
+            con, cursor = await self.get_connection()
+            cursor.execute(query)
             metadata = []
-            rows = cur.fetchall()
+            rows = cursor.fetchall()
             for row in rows:
-                metadata_dict = dict(zip(cur.column_names, row))
+                metadata_dict = dict(zip(cursor.column_names, row))
                 metadata.append(metadata_dict)
             con.close()
-            cur.close()
+            cursor.close()
             return True, metadata
         except Exception as e:
             logging.error(f"ERROR: {e}, {traceback.print_exc()}")
@@ -236,27 +197,20 @@ class mysql_database(Database):
 
 
 class postgresql_database(Database):
-    async def get_connection():
+    async def get_connection(self):
         try:
             con = psycopg2.connect(os.getenv('PSQL_DB_URL'))
             con.autocommit = True
             cursor = con.cursor()
-            return cursor, con
+            return con, cursor
         except Exception as e:
             logging.error(f"ERROR: {e}, {traceback.print_exc()}")
             raise Exception("Failed to connect to db")
         
     async def create_database_and_schema(self, db_name):
         try:
-            con = psycopg2.connect(
-                database="postgres",
-                user=os.getenv('POSTGRES_USER'),
-                password=os.getenv('POSTGRES_PASSWORD'),
-                port=os.getenv('POSTGRES_PORT'),
-                host=os.getenv('POSTGRES_HOST'),
-            )
+            con, cursor = await self.get_connection()
             con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-            cursor = con.cursor()
             query = f'create database "{db_name}";'
             cursor.execute(query)
             cursor.close()
@@ -268,16 +222,9 @@ class postgresql_database(Database):
     
     async def create_schema_in_db(self, db_name, schema):
         try:
-            con = psycopg2.connect(
-                database=db_name,
-                user=os.getenv('POSTGRES_USER'),
-                password=os.getenv('POSTGRES_PASSWORD'),
-                port=os.getenv('POSTGRES_PORT'),
-                host=os.getenv('POSTGRES_HOST'),
-            )
+            con, cursor = await self.get_connection()
             con.autocommit = True
             # con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-            cursor = con.cursor()
             # Split the SQL dump into separate statements
             schema = schema.decode('UTF-8')
             # Remove comments from the SQL dump
@@ -329,15 +276,8 @@ class postgresql_database(Database):
 
     async def get_tables_from_schema_id(self, schema_id):
         try:
-            con = psycopg2.connect(
-                database=schema_id,
-                user=os.getenv('POSTGRES_USER'),
-                password=os.getenv('POSTGRES_PASSWORD'),
-                port=os.getenv('POSTGRES_PORT'),
-                host=os.getenv('POSTGRES_HOST'),
-            )
+            con, cursor = await self.get_connection()
             con.autocommit = True
-            cursor = con.cursor()
             cursor.execute("SELECT table_schema || '.' || table_name as table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema') ORDER BY table_schema, table_name;")
             table_meta = cursor.fetchall()
             table_list = [x[0] for x in table_meta]
@@ -352,21 +292,14 @@ class postgresql_database(Database):
 
     async def get_table_info(self, db_name, table_name):
         try:
-            con = psycopg2.connect(
-                database=db_name,
-                user=os.getenv('POSTGRES_USER'),
-                password=os.getenv('POSTGRES_PASSWORD'),
-                port=os.getenv('POSTGRES_PORT'),
-                host=os.getenv('POSTGRES_HOST'),
-            )
-            cur = con.cursor()
+            con, cursor = await self.get_connection()
             table_schema = table_name.split('.')[0]
             table_second_name = table_name.split('.')[1]
-            cur.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_schema = '{table_schema}' AND table_name = '{table_second_name}';")
-            columns = cur.fetchall()
-            cur.execute(
+            cursor.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_schema = '{table_schema}' AND table_name = '{table_second_name}';")
+            columns = cursor.fetchall()
+            cursor.execute(
                 f"SELECT tc.table_name, kcu.column_name, ccu.table_name AS referenced_table_name, ccu.column_name AS referenced_column_name, ccu.table_schema as reference_table_schema FROM information_schema.table_constraints tc JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name JOIN information_schema.constraint_column_usage ccu ON ccu.constraint_name = tc.constraint_name WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='{table_second_name}' AND tc.table_schema='{table_schema}';")
-            related_tables = cur.fetchall()
+            related_tables = cursor.fetchall()
             table_info = {table_name: {'columns': columns, 'references': {}}}
             for row in related_tables:
                 related_table_name = row[2]
@@ -375,13 +308,13 @@ class postgresql_database(Database):
                 if 'references' not in table_info:
                     table_info['references'] = {}
                 if (related_table_schema + '.' + related_table_name) not in table_info['references']:
-                    cur.execute(
+                    cursor.execute(
                         f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name='{related_table_name}' and table_schema = '{related_table_schema}';")
-                    related_table_columns = cur.fetchall()
+                    related_table_columns = cursor.fetchall()
                     table_info['references'][related_table_schema + '.' + related_table_name] = {'columns': related_table_columns, 'referenced_by': []}
                 table_info['references'][related_table_schema + '.' + related_table_name]['referenced_by'].append(
                     {'table_name': table_name, 'column_name': related_table_column_name})
-            cur.close()
+            cursor.close()
             con.close()
             return table_info, ""
         except Exception as e:
@@ -415,22 +348,15 @@ class postgresql_database(Database):
     
     async def validate_sql(self, db_name, query):
         try:
-            con = psycopg2.connect(
-                database="postgres",
-                user=os.getenv('POSTGRES_QUERY_USER'),
-                password=os.getenv('POSTGRES_QUERY_PASSWORD'),
-                port=os.getenv('POSTGRES_QUERY_PORT'),
-                host=os.getenv('POSTGRES_QUERY_HOST'),
-            )
-            cur = con.cursor()
-            cur.execute(query)
-            rows = cur.fetchall()
+            con, cursor = await self.get_connection()
+            cursor.execute(query)
+            rows = cursor.fetchall()
             metadata = []
             for row in rows:
-                metadata_dict = dict(zip([desc[0] for desc in cur.description], row))
+                metadata_dict = dict(zip([desc[0] for desc in cursor.description], row))
                 metadata.append(metadata_dict)
             con.close()
-            cur.close()
+            cursor.close()
             return True, metadata
         except Exception as e:
             logging.error(f"ERROR: {e}, {traceback.print_exc()}")
