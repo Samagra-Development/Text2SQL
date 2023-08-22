@@ -190,6 +190,10 @@ async def promptv3():
         chat_gpt_response = json.loads(chat_gpt_response)
         Sub_G = get_sub_graph(G, chat_gpt_response['subject'], 1)
         sub_schema = graph_to_sql(Sub_G)
+        for table in chat_gpt_response['relatedTables']:
+            if table in tables_list:
+                Sub_G = get_sub_graph(G, table, 1)
+                sub_schema += graph_to_sql(Sub_G)
         query_prompt = VERSION2_PROMPT % (schema_type, sub_schema, prompt)
         logging.info("prompt: %s", query_prompt)
         chat_gpt_query_response = await chatGPT(query_prompt, app) 
