@@ -11,4 +11,5 @@ class ResponseCodes(Enum):
     SCHEMA_LOAD_ERROR = "TE_002"
     INSERT_PROMPT_ERROR = "TE_003"
     CREATE_DB_ERROR = "TE_004"
+    INTERNAL_SERVER_ERROR = "TE_006"
 

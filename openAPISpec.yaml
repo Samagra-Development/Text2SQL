@@ -1,0 +1,85 @@
+openapi: 3.0.0
+info:
+  title: Text2SQL API
+  description: API for Text2SQL application
+  version: 1.0.0
+servers:
+  - url: http://localhost:5078
+paths:
+  /onboard:
+    post:
+      summary: Onboard schema
+      description: Allows users to onboard their schema on the application.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                schema:
+                  type: string
+                  format: binary
+                schema_type:
+                  type: string
+                schema_name:
+                  type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example:
+                error: {}
+                result:
+                  code: TS_001
+                  data:
+                    message: schema onboarded
+                    query_data: ""
+                    schema_id: "041f0c91-6b4c-4f38-a860-f40a69499181"
+                  prompt: {}
+        default:
+          description: Error response
+          content:
+            application/json:
+              example:
+                error:
+                  message: "Error message"
+                  code: "Error_code"
+                result: {}
+                prompt: {}
+
+  /prompt/v3:
+    post:
+      summary: Get SQL query for a given prompt
+      description: Retrieve SQL query for a given prompt and schema ID.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                schema_id:
+                  type: string
+                prompt:
+                  type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              example:
+                error: {}
+                result:
+                  code: TS_002
+                  data:
+                    query: "SELECT DISTINCT Ref_Template_Types.Template_Type_Description AS Template_Type, Templates.Template_Details AS Document_Name FROM Ref_Template_Types  JOIN Templates ON Ref_Template_Types.Template_Type_Code = Templates.Template_Type_Code  JOIN Documents ON Templates.Template_ID = Documents.Template_ID;"
+                    query_data: []
+        default:
+          description: Error response
+          content:
+            application/json:
+              example:
+                error:
+                  message: "Error message"
+                  code: "Error_code"
+                result: {}

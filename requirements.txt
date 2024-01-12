@@ -8,3 +8,4 @@ openai
 mysql-connector-python
 testcontainers
 quart_cors
+json_repair

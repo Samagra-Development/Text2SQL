@@ -83,7 +83,15 @@ pip install pygraphviz
 #### Mac OS
 ```bash
 sudo apt-get install libgraphviz-dev
-pip install --global-option=build_ext --global-option="-I/opt/homebrew/Cellar/graphviz/8.0.5/include/" --global-option="-L/opt/homebrew/Cellar/graphviz/8.0.5/lib/" pygraphviz
+pip3 install --global-option=build_ext --global-option="-I/opt/homebrew/Cellar/graphviz/8.0.5/include/" --global-option="-L/opt/homebrew/Cellar/graphviz/8.0.5/lib/" pygraphviz
+
+
+brew install graphviz
+python -m pip install \
+    --global-option=build_ext \
+    --global-option="-I$(brew --prefix graphviz)/include/" \
+    --global-option="-L$(brew --prefix graphviz)/lib/" \
+    pygraphviz
 ```
 
 ### Usage

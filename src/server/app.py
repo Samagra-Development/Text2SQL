@@ -7,10 +7,10 @@ from quart import Quart, request, abort, current_app
 from sql_formatter.core import format_sql
 from quart_cors import cors
 
-from utils import detect_lang, chatGPT, get_response, validate_schema_file
+from utils import detect_lang, chatGPT, chatGPT4, chatGPT4WithContext, get_response, validate_schema_file, clean_sql_query, clean_json_response, clean_validate_query_response, extract_sql_query
 from http import HTTPStatus
 from response_codes import ResponseCodes
-from prompts import SUBJECT_QUERY_PROMPT, SQL_QUERY_PROMPT, VERSION2_PROMPT
+from prompts import SUBJECT_QUERY_PROMPT, SQL_QUERY_PROMPT, VERSION2_PROMPT, QUERY_FIX_PROMPT, VALIDATE_QUERY_PROMPT, VERSION3_PROMPT
 from db_utils import insert_into_schema_holder, add_prompts, get_schema_type_by_schema_id
 import json
 import aiohttp
@@ -21,6 +21,7 @@ from pathlib import Path
 from db.db_helper import database_factory
 from functools import wraps
 
+import json_repair
 from sql_graph.src.graph_modified import *
 
 from werkzeug.utils import secure_filename
@@ -54,6 +55,48 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)  # Set the lowest logging level you want to capture
 logger.addHandler(info_handler)
 logger.addHandler(error_handler)
+
+chat_prompt = [
+    {
+        "role": "system",
+        "content": "You are now an excellent SQL writer, first I'll give you some tips and examples, and I need you to remember the tips, and do not make same mistakes."
+    },
+    {
+        "role": "user",
+        "content": """Tips 1: 
+Question: Which A has most number of B?
+Gold SQL: select A from B group by A order by count ( * ) desc limit 1;
+Notice that the Gold SQL doesn't select COUNT(*) because the question only wants to know the A and the number should be only used in ORDER BY clause, there are many questions asks in this way, and I need you to remember this in the the following questions."""
+    },
+    {
+        "role": "assistant",
+        "content": "Thank you for the tip! I'll keep in mind that when the question only asks for a certain field, I should not include the COUNT(*) in the SELECT statement, but instead use it in the ORDER BY clause to sort the results based on the count of that field."
+    },
+    {
+        "role": "user",
+        "content": """Tips 2: 
+Don't use "IN", "OR", "LEFT JOIN" as it might cause extra results, use "INTERSECT" or "EXCEPT" instead, and remember to use "DISTINCT" or "LIMIT" when necessary.
+For example, 
+Question: Who are the A who have been nominated for both B award and C award?
+Gold SQL should be: select A from X where award = 'B' intersect select A from X where award = 'C';"""
+    },
+    {
+        "role": "assistant",
+        "content": "Thank you for the tip! I'll remember to use \"INTERSECT\" or \"EXCEPT\" instead of \"IN\", \"OR\", or \"LEFT JOIN\" when I want to find records that match or don't match across two tables. Additionally, I'll make sure to use \"DISTINCT\" or \"LIMIT\" when necessary to avoid repetitive results or limit the number of results returned."
+    },
+    {
+        "role": "user",
+        "content": """Tips 3:
+Dont Select unnecessary column which are not asked in the NLQ,
+For example,
+NLQ - What is the A in B?
+In this case only fetch only A since NLQ is only asking for A column and nothing else."""
+    },
+    {
+        "role": "assistant",
+        "content": "Got it. I'll ensure to select only the necessary columns that are explicitly asked for in the natural language query (NLQ)."
+    }
+]
 
 def save_uploaded_file(uploaded_file, target_folder, new_filename):
     if not os.path.exists(target_folder):
@@ -168,50 +211,108 @@ async def prompt():
 async def promptv3():
     response = status_code = err_msg = http_status_code = ""
     start = time.time()
-    data = await request.get_json()
-    prompt = data['prompt']
-    schema_id = data['schema_id']
-    schema_type = await get_schema_type_by_schema_id(schema_id)
-    factory = database_factory()
-    db = factory.get_database_connection(schema_type=schema_type)    
-    status, err = await add_prompts(schema_id, prompt)
-    if status is True:
-        # tables_list, err = await db.get_tables_from_schema_id(schema_id)
-        schema_file = read_file(f"./files/{schema_id}.sql")
-        G, err = sql_to_graph(schema_file)
-        tables_list = get_tables_from_schema_id(G)
-        if tables_list is not None:
-            tables = ', '.join([f"'{elem}'" for elem in tables_list])
-        chat_gpt_prompt = SUBJECT_QUERY_PROMPT % (tables, prompt)
-        logging.info(f"Query Prompt : {chat_gpt_prompt}")
-        chat_gpt_response = await chatGPT(chat_gpt_prompt, app)
-        logging.info(f"ChatGpt response : {chat_gpt_response}")
-        # todo: add validators for chatgpt responses
-        chat_gpt_response = json.loads(chat_gpt_response)
-        Sub_G = get_sub_graph(G, chat_gpt_response['subject'], 1)
-        sub_schema = graph_to_sql(Sub_G)
-        for table in chat_gpt_response['relatedTables']:
-            if table in tables_list:
-                Sub_G = get_sub_graph(G, table, 1)
-                sub_schema += graph_to_sql(Sub_G)
-        query_prompt = VERSION2_PROMPT % (schema_type, sub_schema, prompt)
-        logging.info("prompt: %s", query_prompt)
-        chat_gpt_query_response = await chatGPT(query_prompt, app) 
-        query = chat_gpt_query_response.split('-')[1].replace('\n', ' ').replace("'''", '').replace('```', '').replace("\\", "")
-        validate_flag, data = await db.validate_sql(schema_id, query)
-        if(validate_flag == False):
-            data = [{"error": data}]
-        response = {"query": query}
-        status_code = ResponseCodes.QUERY_GENERATED.value
-        http_status_code = HTTPStatus.OK
-    else:
-        response = "failed to insert prompt"
-        status_code = ResponseCodes.INSERT_PROMPT_ERROR.value
+    try:
+        data = await request.get_json()
+        prompt = data['prompt']
+        schema_id = data['schema_id']
+        prompt_response = {"Step1":{"Subject": {"Prompt": "", "Response": ""}}, "Step2":{"Query": {"Prompt": "", "Response": ""}}, "Step3":{"ValidateQuery": {"Prompt": "", "Response": ""}}, "Query Fix": {"Prompt": "", "Response": ""}}
+        schema_type = await get_schema_type_by_schema_id(schema_id)
+        factory = database_factory()
+        db = factory.get_database_connection(schema_type=schema_type)    
+        status, err = await add_prompts(schema_id, prompt)
+        if status is True:
+            tables_list, err = await db.get_tables_from_schema_id(schema_id)
+            schema_file = read_file(f"./files/{schema_id}.sql")
+            G, err = sql_to_graph(schema_file)
+            tables_list = get_tables_from_schema_id(G)
+            if tables_list is not None:
+                tables = ', '.join([f"'{elem}'" for elem in tables_list])
+            chat_gpt_prompt = SUBJECT_QUERY_PROMPT % (tables, prompt, schema_file)
+            logging.info(f"Query Prompt : {chat_gpt_prompt}")
+            chat_gpt_response = await chatGPT(chat_gpt_prompt, app)
+            prompt_response["Step1"]["Subject"]["Prompt"] = chat_gpt_prompt
+            prompt_response["Step1"]["Subject"]["Response"] = chat_gpt_response
+            logging.info(f"ChatGpt response : {chat_gpt_response}")
+            # todo: add validators for chatgpt responses
+            chat_gpt_response = clean_json_response(chat_gpt_response)
+            print(chat_gpt_response)
+            # chat_gpt_response = json.loads(chat_gpt_response)
+            chat_gpt_response = json_repair.repair_json(chat_gpt_response, return_objects=True)
+            # Sub_G = get_sub_graph(G, chat_gpt_response['subject'], 1)
+            # sub_schema = graph_to_sql(Sub_G)
+            # for table in chat_gpt_response['relatedTables']:
+            #     if table in tables_list:
+            #         Sub_G = get_sub_graph(G, table, 1)
+            #         sub_schema += graph_to_sql(Sub_G)
+            # steps = chat_gpt_response['stepsToFollow']
+            schemaExplanation = chat_gpt_response['schemaExplanation']
+            # nlqExplanation = chat_gpt_response['nlqExplanation']
+            # query_prompt = VERSION2_PROMPT % (schema_type, schema_type, schemaExplanation, schema_file, prompt, nlqExplanation)
+
+            messages = chat_prompt.copy()
+            query_prompt = VERSION3_PROMPT % (schemaExplanation, schema_file, prompt)
+            messages.append({"role": "user", "content": query_prompt})
+            logging.info("prompt: %s", messages)
+            chat_gpt_query_response = await chatGPT4WithContext(messages, app)
+            logging.info("response: %s", chat_gpt_query_response)
+            prompt_response["Step2"]["Query"]["Prompt"] = query_prompt
+            prompt_response["Step2"]["Query"]["Response"] = chat_gpt_query_response
+
+            if(clean_validate_query_response(chat_gpt_query_response) != None):
+                query = clean_sql_query(clean_validate_query_response(chat_gpt_query_response))
+            else:
+                query = clean_sql_query(chat_gpt_query_response)
+
+            if not query.strip().upper().startswith("SELECT"):
+                query = "SELECT " + query
+
+            validate_sql_prompt = VALIDATE_QUERY_PROMPT % (schemaExplanation, schema_file, prompt, query)
+            logging.info("prompt: %s", validate_sql_prompt)
+            chat_gpt_query_response = await chatGPT4(validate_sql_prompt, app)
+            prompt_response["Step3"]["ValidateQuery"]["Prompt"] = validate_sql_prompt
+            prompt_response["Step3"]["ValidateQuery"]["Response"] = chat_gpt_query_response
+            query = clean_validate_query_response(chat_gpt_query_response)
+
+            validate_flag = False
+            counter = 0
+            temp_query = query
+            while validate_flag == False and counter < 3:
+                validate_flag, data = await db.validate_sql(schema_id, query)
+                if(validate_flag == False):
+                    query_fix_prompt = QUERY_FIX_PROMPT % (schema_type, schema_type, schema_type, schema_file, data, prompt)
+                    logging.info(f"Query Fix Prompt : {query_fix_prompt}")
+                    chat_gpt_query_response = await chatGPT(query_fix_prompt, app)
+                    prompt_response["Query Fix"]["Prompt"] = query_fix_prompt
+                    prompt_response["Query Fix"]["Response"] = chat_gpt_query_response
+                    print("Original - ", chat_gpt_query_response)
+                    temp_query = clean_sql_query(chat_gpt_query_response)
+                    print("Cleaned - ", query)
+                counter += 1
+            
+            if(validate_flag == False):
+                data = [{"error": data}]
+            if(validate_flag == True):
+                query = temp_query
+            response = {"query": query}
+            status_code = ResponseCodes.QUERY_GENERATED.value
+            http_status_code = HTTPStatus.OK
+        else:
+            response = "failed to insert prompt"
+            status_code = ResponseCodes.INSERT_PROMPT_ERROR.value
+            http_status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+            err_msg = err
+            data=err_msg
+    except Exception as e:
+        # Log the exception for debugging purposes
+        logging.error(f"An error occurred: {str(e)}")
+        response = "An error occurred while processing the request"
+        status_code = ResponseCodes.INTERNAL_SERVER_ERROR.value
         http_status_code = HTTPStatus.INTERNAL_SERVER_ERROR
-        err_msg = err
-        data=err_msg
+        err_msg = str(e)
+        data = err_msg
     end = time.time()
     print(end - start)
+    # response = await get_response(response=response, status_code=status_code, http_status_code=http_status_code, err_msg=err_msg, data=data, prompt=prompt_response)
     response = await get_response(response=response, status_code=status_code, http_status_code=http_status_code, err_msg=err_msg, data=data)
     logging.info(response)
     return response

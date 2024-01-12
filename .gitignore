@@ -167,3 +167,8 @@ postgres-data
 playground/node_modules
 frontend/node_modules
 postgres-client-data/
+
+files
+tests/evaluation
+src/server/examples
+tests/result*

@@ -5,20 +5,21 @@ import json
 import json
 from dotenv import load_dotenv
 import logging
+import re
 
-import openai
+from openai import AsyncOpenAI
 
 file = Path(__file__).resolve()
 parent, ROOT_FOLDER = file.parent, file.parents[2]
 load_dotenv(dotenv_path=f"{ROOT_FOLDER}/.env")
 
-openai.api_key = os.getenv('OPENAI_API_KEY')
+client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 
 async def chatGPT(prompt, context):
     print("Sending prompt to ChatGPT")
     response = ""
-    completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}], temperature=0)
+    completion = await client.chat.completions.create(model="gpt-3.5-turbo-1106", messages=[{"role": "user", "content": prompt}], temperature=1)
     response = completion.choices[0].message.content
     if (response == ""):
         # return await chatGPT(prompt, word, context)
@@ -28,6 +29,31 @@ async def chatGPT(prompt, context):
         logging.info(response)
         return response
 
+async def chatGPT4(prompt, context):
+    print("Sending prompt to ChatGPT")
+    response = ""
+    completion = await client.chat.completions.create(model="gpt-4", messages=[{"role": "user", "content": prompt}], temperature=1)
+    response = completion.choices[0].message.content
+    if (response == ""):
+        # return await chatGPT(prompt, word, context)
+        logging.error("Empty response received from chatGPT")
+        return None
+    else:
+        logging.info(response)
+        return response
+
+async def chatGPT4WithContext(messages, context):
+    print("Sending prompt to ChatGPT")
+    response = ""
+    completion = await client.chat.completions.create(model="gpt-4", messages=messages, temperature=1)
+    response = completion.choices[0].message.content
+    if (response == ""):
+        # return await chatGPT(prompt, word, context)
+        logging.error("Empty response received from chatGPT")
+        return None
+    else:
+        logging.info(response)
+        return response
 
 async def detect_lang(text, context):
     url = "https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/compute"
@@ -122,4 +148,91 @@ async def delete_lines_with_substring(input_string, substring):
     lines = input_string.split('\n')
     filtered_lines = [line for line in lines if substring.lower() not in line.lower()]
     result = '\n'.join(filtered_lines)
+    return result
+
+def clean_json_response(input_string):
+    cleaned_query = input_string.strip()
+    cleaned_query = cleaned_query.lstrip('\n').rstrip('\n')
+
+    if cleaned_query.startswith("```json"):
+        cleaned_query = cleaned_query[7:].strip()
+
+    if cleaned_query.startswith("```"):
+        cleaned_query = cleaned_query[3:].strip()
+    
+    if cleaned_query.endswith("```"):
+        cleaned_query = cleaned_query[:-3].strip()
+
+    if cleaned_query.startswith("JSON"):
+        cleaned_query = cleaned_query[4:].strip()
+
+    if cleaned_query.startswith("json"):
+        cleaned_query = cleaned_query[4:].strip()
+
+    return cleaned_query
+
+def clean_sql_query(input_string):
+    # Remove leading and trailing whitespaces
+    cleaned_query = input_string.strip()
+    # Strip newline characters from the start and end of the query
+    cleaned_query = cleaned_query.lstrip('\n').rstrip('\n')
+
+    cleaned_query = input_string.strip()
+
+    # Remove leading 'Output -' if present
+    cleaned_query = cleaned_query.replace("Output -", "").strip()
+
+    # Check if the query is surrounded by "```sql" and "```"
+    # if cleaned_query.startswith("```sql") and cleaned_query.endswith("```"):
+    #     cleaned_query = cleaned_query[6:-3].strip()
+
+    if cleaned_query.startswith("```sql"):
+        cleaned_query = cleaned_query[6:].strip()
+    
+    if cleaned_query.endswith("```"):
+        cleaned_query = cleaned_query[:-3].strip()
+
+    # Check for common prefixes like 'sql' or '```' and remove them
+    prefixes = ["sql", "```"]
+    for prefix in prefixes:
+        if cleaned_query.startswith(prefix):
+            cleaned_query = cleaned_query[len(prefix):].lstrip()
+
+    # Remove leading 'Output -' if present
+    cleaned_query = cleaned_query.replace("Output -", "").strip()
+
+    cleaned_query = cleaned_query.replace('\n', " ")
+
+    return cleaned_query
+
+def clean_validate_query_response(input_string):
+    # Define the regex pattern to match the SQL query
+    sql_pattern = r'```sql\n(.*?)```'
+    
+    # Find the match using re.DOTALL to match across multiple lines
+    match = re.search(sql_pattern, input_string, re.DOTALL)
+    
+    if match:
+        # Extract and return the matched SQL query
+        sql_query = match.group(1).strip()
+        sql_query = sql_query.replace('\n', " ")
+        # Remove any leading or trailing whitespaces
+        return sql_query
+    else:
+        # Return None if no match is found
+        return None
+    
+def extract_sql_query(input_text):
+    # Define a regular expression pattern to match SQL queries
+    sql_pattern = r'```sql(.*?)```|\bSELECT\b(.*?)(?:\bFROM\b|\bJOIN\b|\bWHERE\b|\bGROUP BY\b|\bORDER BY\b|\bLIMIT\b)'
+
+    # Use re.findall to find all matches in the input text
+    matches = re.findall(sql_pattern, input_text, re.DOTALL)
+
+    # Extract the matched SQL queries from the groups
+    sql_queries = [match[0].strip() if match[0] else match[1].strip() for match in matches]
+
+    # Join multiple SQL queries into a single string
+    result = ' '.join(sql_queries)
+
     return result
