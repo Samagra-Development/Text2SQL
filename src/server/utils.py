@@ -236,3 +236,29 @@ def extract_sql_query(input_text):
     result = ' '.join(sql_queries)
 
     return result
+
+def remove_insert_statements(sql_content):
+
+    # Split the SQL content into statements
+    statements = sql_content.split(b';')
+
+    # Filter out INSERT INTO statements
+    filtered_statements = [statement.strip() for statement in statements if not statement.strip().startswith(b'INSERT INTO')]
+    
+    # Join the filtered statements back into a single string
+    filtered_content = b';\n\n'.join(filtered_statements)
+    
+    return filtered_content
+
+def save_uploaded_file(schema_file, target_folder, new_filename):
+
+    if not os.path.exists(target_folder):
+        os.makedirs(target_folder)
+
+    filtered_content = remove_insert_statements(schema_file)
+
+    target_file_path = os.path.join(target_folder, secure_filename(new_filename))
+    with open(target_file_path, 'wb') as f:
+        f.write(filtered_content)
+
+    return target_file_path

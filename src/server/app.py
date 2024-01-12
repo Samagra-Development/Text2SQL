@@ -98,28 +98,6 @@ In this case only fetch only A since NLQ is only asking for A column and nothing
     }
 ]
 
-def save_uploaded_file(uploaded_file, target_folder, new_filename):
-    if not os.path.exists(target_folder):
-        os.makedirs(target_folder)
-
-    target_file_path = os.path.join(target_folder, secure_filename(new_filename))
-    with open(target_file_path, 'wb') as f:
-        f.write(uploaded_file)
-
-    return target_file_path
-
-def read_file(file_path):
-    try:
-        print(os.getcwd(), file_path)
-        with open(file_path, 'r') as file:
-            content = file.read()
-            return content
-    except Exception as e:
-        logging.error("ERROR: {e}")
-        print(f"ERROR: {e}, {e.print_exc()}")
-    return ""
-
-
 def get_tables_from_schema_id(G):
     tables_list = []
     for node, attrs in G.nodes(data=True):
